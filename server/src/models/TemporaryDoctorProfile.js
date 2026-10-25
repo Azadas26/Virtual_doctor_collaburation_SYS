@@ -77,6 +77,10 @@ const temporaryDoctorProfileSchema = new mongoose.Schema({
             type: String, // e.g. 'Registration Certificate', 'Degree Certificate', 'Government ID', 'Experience Certificate'
             required: true
         },
+        documentNumber: {
+            type: String,
+            default: ''
+        },
         fileUrl: {
             type: String,
             required: true

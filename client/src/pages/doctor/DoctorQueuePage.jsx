@@ -28,6 +28,7 @@ import {
 const DoctorQueuePage = () => {
     const [queueData, setQueueData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedDoctorId, setSelectedDoctorId] = useState(null);
 
     // Patient Details Modal State
     const [detailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -43,11 +44,15 @@ const DoctorQueuePage = () => {
     const [investigations, setInvestigations] = useState(['']);
     const [submitting, setSubmitting] = useState(false);
 
-    const fetchQueue = async () => {
+    const fetchQueue = async (docId = selectedDoctorId) => {
         try {
-            const res = await API.get('/consultations/queue');
+            const url = docId ? `/consultations/queue?doctorId=${docId}` : '/consultations/queue';
+            const res = await API.get(url);
             if (res.data.success) {
                 setQueueData(res.data);
+                if (!docId && res.data.doctor?._id) {
+                    setSelectedDoctorId(res.data.doctor._id);
+                }
             }
         } catch (error) {
             console.error('Fetch queue error:', error);
@@ -57,10 +62,12 @@ const DoctorQueuePage = () => {
     };
 
     useEffect(() => {
-        fetchQueue();
-        const interval = setInterval(fetchQueue, 8000); // Live poll queue
+        fetchQueue(selectedDoctorId);
+        const interval = setInterval(() => {
+            fetchQueue(selectedDoctorId);
+        }, 5000); // Live poll queue every 5s
         return () => clearInterval(interval);
-    }, []);
+    }, [selectedDoctorId]);
 
     const handleStartConsultation = async (appointmentId) => {
         try {
@@ -162,56 +169,56 @@ const DoctorQueuePage = () => {
             <Sidebar />
 
             <main className="flex-1 p-6 lg:p-10 max-w-7xl">
-                {/* 1. Shift Schedule & Hospital Header */}
-                <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-teal-950 text-white p-7 rounded-3xl shadow-lg mb-8 relative overflow-hidden">
+                {/* 1. Modern Light Shift Schedule & Hospital Banner */}
+                <div className="hero-banner-light p-7 mb-8 relative overflow-hidden border border-teal-200/90 text-slate-900 shadow-sm">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                            <div className="inline-flex items-center gap-1.5 bg-teal-500/20 text-teal-300 text-xs font-bold px-3 py-1 rounded-full mb-2 border border-teal-400/30">
-                                <Clock className="w-3.5 h-3.5 text-teal-400" />
+                            <div className="inline-flex items-center gap-1.5 bg-teal-100/80 text-teal-800 text-xs font-bold px-3 py-1 rounded-full mb-2.5 border border-teal-300/60 shadow-xs">
+                                <Clock className="w-3.5 h-3.5 text-teal-600" />
                                 {doctor?.doctorType === 'TEMPORARY'
                                     ? 'Voluntary Capacity Sharing Shift'
                                     : 'Permanent OPD Clinical Shift'}
                             </div>
-                            <h1 className="text-2xl lg:text-3xl font-extrabold tracking-tight">
+                            <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-slate-900">
                                 Dr. {doctor?.doctorName || 'Doctor'}
                             </h1>
-                            <p className="text-teal-200 text-sm mt-0.5">
+                            <p className="text-teal-700 font-bold text-sm mt-0.5">
                                 {doctor?.specialization} • {doctor?.department}
                                 {doctor?.qualification ? ` (${doctor.qualification})` : ''}
                             </p>
-                            <p className="text-slate-300 text-xs mt-1 flex items-center gap-1.5">
-                                <Building2 className="w-3.5 h-3.5 text-teal-400" />
+                            <p className="text-slate-500 text-xs mt-1 flex items-center gap-1.5">
+                                <Building2 className="w-3.5 h-3.5 text-teal-600" />
                                 {doctor?.hospital?.name || activeContract?.hospitalName || 'Government Hospital'}
                                 {doctor?.hospital?.district ? ` (${doctor.hospital.district})` : ''}
                             </p>
                         </div>
 
                         {/* Shift Timings & Contract Card */}
-                        <div className="bg-white/10 backdrop-blur-md border border-white/15 p-4 rounded-2xl text-xs space-y-1.5 min-w-[260px]">
+                        <div className="bg-white/90 backdrop-blur-md border border-slate-200/80 p-4 rounded-2xl text-xs space-y-2 min-w-[270px] shadow-sm">
                             <div className="flex items-center justify-between">
-                                <span className="text-slate-300 font-semibold flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5 text-teal-300" /> Shift Hours:
+                                <span className="text-slate-500 font-semibold flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5 text-teal-600" /> Shift Hours:
                                 </span>
-                                <span className="font-bold text-white">
+                                <span className="font-bold text-slate-900">
                                     {activeContract?.workingHours || doctor?.workingHours?.start + ' - ' + doctor?.workingHours?.end || '09:00 AM - 01:00 PM'}
                                 </span>
                             </div>
 
                             <div className="flex items-center justify-between">
-                                <span className="text-slate-300 font-semibold flex items-center gap-1">
-                                    <Calendar className="w-3.5 h-3.5 text-teal-300" /> Duty Days:
+                                <span className="text-slate-500 font-semibold flex items-center gap-1">
+                                    <Calendar className="w-3.5 h-3.5 text-teal-600" /> Duty Days:
                                 </span>
-                                <span className="font-bold text-teal-200 truncate max-w-[160px]">
+                                <span className="font-bold text-teal-700 truncate max-w-[160px]">
                                     {activeContract?.workingDays?.join(', ') || doctor?.workingDays?.join(', ') || 'Mon, Wed, Fri'}
                                 </span>
                             </div>
 
                             {activeContract && (
-                                <div className="flex items-center justify-between pt-1 border-t border-white/10">
-                                    <span className="text-slate-300 font-semibold flex items-center gap-1">
-                                        <FileCheck className="w-3.5 h-3.5 text-emerald-400" /> Contract:
+                                <div className="flex items-center justify-between pt-1.5 border-t border-slate-100">
+                                    <span className="text-slate-500 font-semibold flex items-center gap-1">
+                                        <FileCheck className="w-3.5 h-3.5 text-emerald-600" /> Contract:
                                     </span>
-                                    <span className="font-mono font-bold text-emerald-300">
+                                    <span className="font-mono font-bold text-emerald-700">
                                         {activeContract.contractNumber}
                                     </span>
                                 </div>
@@ -220,18 +227,18 @@ const DoctorQueuePage = () => {
                     </div>
 
                     {/* Today Live Counter Pills */}
-                    <div className="grid grid-cols-3 gap-3 mt-6 pt-5 border-t border-white/10">
-                        <div className="bg-white/10 p-3 rounded-2xl border border-white/10 text-center">
-                            <span className="text-[11px] font-bold text-slate-300 uppercase block">Today Patients</span>
-                            <span className="text-2xl font-black text-white">{summary?.totalToday || 0}</span>
+                    <div className="grid grid-cols-3 gap-3 mt-6 pt-5 border-t border-teal-100">
+                        <div className="bg-white/80 p-3.5 rounded-2xl border border-slate-200/80 text-center shadow-xs">
+                            <span className="text-[11px] font-bold text-slate-500 uppercase block tracking-wider">Today Patients</span>
+                            <span className="text-2xl font-black text-slate-900 font-mono">{summary?.totalToday || 0}</span>
                         </div>
-                        <div className="bg-amber-500/20 p-3 rounded-2xl border border-amber-400/30 text-center">
-                            <span className="text-[11px] font-bold text-amber-300 uppercase block">Waiting in Queue</span>
-                            <span className="text-2xl font-black text-amber-200">{summary?.waitingCount || 0}</span>
+                        <div className="bg-amber-50/90 p-3.5 rounded-2xl border border-amber-200/80 text-center shadow-xs">
+                            <span className="text-[11px] font-bold text-amber-800 uppercase block tracking-wider">Waiting in Queue</span>
+                            <span className="text-2xl font-black text-amber-700 font-mono">{summary?.waitingCount || 0}</span>
                         </div>
-                        <div className="bg-emerald-500/20 p-3 rounded-2xl border border-emerald-400/30 text-center">
-                            <span className="text-[11px] font-bold text-emerald-300 uppercase block">Completed</span>
-                            <span className="text-2xl font-black text-emerald-200">{summary?.completedCount || 0}</span>
+                        <div className="bg-emerald-50/90 p-3.5 rounded-2xl border border-emerald-200/80 text-center shadow-xs">
+                            <span className="text-[11px] font-bold text-emerald-800 uppercase block tracking-wider">Completed</span>
+                            <span className="text-2xl font-black text-emerald-700 font-mono">{summary?.completedCount || 0}</span>
                         </div>
                     </div>
                 </div>
@@ -241,31 +248,39 @@ const DoctorQueuePage = () => {
                         <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
                         <p className="text-slate-500 text-sm font-semibold">Synchronizing Live Patient Queue & Shift Schedule...</p>
                     </div>
+                ) : !doctor ? (
+                    <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center max-w-md mx-auto shadow-sm">
+                        <Clock className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                        <h3 className="font-bold text-slate-800 text-lg">No Active OPD Shift Assignment</h3>
+                        <p className="text-slate-500 text-sm mt-1">
+                            {queueData?.message || 'Please check your active hospital contract on the Contracts page to begin live consultation shifts.'}
+                        </p>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left 2 Cols: Active & Next Patients */}
                         <div className="lg:col-span-2 space-y-6">
 
                             {/* CURRENT PATIENT IN CONSULTATION */}
-                            <div className="bg-white rounded-3xl border-2 border-teal-500 p-6 shadow-sm relative overflow-hidden">
+                            <div className="card-modern border-2 border-teal-500/80 p-6 relative overflow-hidden shadow-xl shadow-teal-900/5">
                                 <div className="absolute top-0 right-0 bg-teal-600 text-white text-[11px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
                                     <HeartPulse className="w-3.5 h-3.5 animate-pulse" /> In Consultation
                                 </div>
 
-                                <h3 className="font-extrabold text-slate-900 text-xl mb-4 flex items-center gap-2">
+                                <h3 className="font-black text-slate-900 text-xl mb-4 flex items-center gap-2">
                                     <Stethoscope className="w-6 h-6 text-teal-600" /> Active OP Consultation
                                 </h3>
 
                                 {currentPatient ? (
                                     <div className="space-y-4">
-                                        <div className="flex flex-col sm:flex-row sm:items-start justify-between bg-slate-50 p-5 rounded-2xl border border-slate-200 gap-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-start justify-between panel-subtle p-5 border border-slate-200/80 gap-4 shadow-xs">
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <p className="text-2xl font-black text-slate-900">
                                                         {currentPatient.patientId?.name || 'Patient'}
                                                     </p>
                                                     {calculateAge(currentPatient.patientId?.dateOfBirth) && (
-                                                        <span className="text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
+                                                        <span className="text-xs font-bold bg-white text-slate-700 px-2.5 py-0.5 rounded-full border border-slate-200 shadow-xs">
                                                             {calculateAge(currentPatient.patientId?.dateOfBirth)} yrs • {currentPatient.patientId?.gender}
                                                         </span>
                                                     )}
@@ -277,9 +292,9 @@ const DoctorQueuePage = () => {
                                                     <span>APT #{currentPatient.appointmentNumber}</span>
                                                     <span>•</span>
                                                     <span className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
-                                                        currentPatient.priorityCategory === 'EMERGENCY' ? 'bg-red-100 text-red-700' :
-                                                        currentPatient.priorityCategory === 'HIGH' ? 'bg-amber-100 text-amber-800' :
-                                                        'bg-emerald-100 text-emerald-800'
+                                                        currentPatient.priorityCategory === 'EMERGENCY' ? 'bg-red-100 text-red-700 border border-red-200' :
+                                                        currentPatient.priorityCategory === 'HIGH' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                                                        'bg-emerald-100 text-emerald-800 border border-emerald-200'
                                                     }`}>
                                                         {currentPatient.priorityCategory} PRIORITY
                                                     </span>
@@ -289,14 +304,14 @@ const DoctorQueuePage = () => {
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <button
                                                     onClick={() => handleOpenPatientDetails(currentPatient)}
-                                                    className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition border border-slate-300"
+                                                    className="bg-white hover:bg-slate-50 text-slate-800 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition border border-slate-200 shadow-xs"
                                                 >
                                                     <Eye className="w-4 h-4 text-slate-600" /> Full Patient Details
                                                 </button>
 
                                                 <button
                                                     onClick={() => setShowConsultModal(true)}
-                                                    className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md shadow-teal-600/20 transition"
+                                                    className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md shadow-teal-600/20 transition active:scale-95"
                                                 >
                                                     <FileText className="w-4 h-4" /> Prescribe & Complete
                                                 </button>
@@ -305,14 +320,14 @@ const DoctorQueuePage = () => {
 
                                         {/* Chief Symptoms & Background Row */}
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                                                <span className="font-bold text-slate-500 block mb-1">Chief Symptoms Reported</span>
-                                                <p className="font-bold text-slate-900 text-sm">{currentPatient.symptoms}</p>
+                                            <div className="panel-subtle p-4 border border-slate-200/80 shadow-xs">
+                                                <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px] block mb-1">Chief Symptoms Reported</span>
+                                                <p className="font-extrabold text-slate-900 text-sm">{currentPatient.symptoms}</p>
                                                 <span className="text-slate-400 text-[11px] block mt-1">Duration: {currentPatient.symptomDuration}</span>
                                             </div>
 
-                                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                                                <span className="font-bold text-slate-500 block mb-1">Medical Background</span>
+                                            <div className="panel-subtle p-4 border border-slate-200/80 shadow-xs">
+                                                <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px] block mb-1">Medical Background</span>
                                                 <p className="font-semibold text-slate-800">
                                                     History: <span className="font-normal">{currentPatient.patientId?.medicalHistory || 'None reported'}</span>
                                                 </p>
@@ -323,7 +338,7 @@ const DoctorQueuePage = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="p-10 text-center text-slate-500 text-sm bg-slate-50 rounded-2xl border border-dashed border-slate-300 space-y-2">
+                                    <div className="p-10 text-center text-slate-500 text-sm bg-slate-50/60 rounded-2xl border border-dashed border-slate-200 space-y-2">
                                         <Stethoscope className="w-10 h-10 text-slate-300 mx-auto" />
                                         <p className="font-bold text-slate-700">No Patient Currently in Consultation</p>
                                         <p className="text-xs text-slate-400">
@@ -337,12 +352,12 @@ const DoctorQueuePage = () => {
 
                             {/* NEXT WAITING PATIENT CARD */}
                             {nextPatient && (
-                                <div className="bg-white p-6 rounded-3xl border border-amber-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-50/30">
+                                <div className="card-modern p-6 border border-amber-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-amber-50/60 to-white">
                                     <div>
-                                        <span className="text-[10px] font-black text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                                        <span className="text-[10px] font-black text-amber-800 bg-amber-100 border border-amber-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                                             Next In Queue (Token #{nextPatient.queuePosition})
                                         </span>
-                                        <p className="font-extrabold text-slate-900 text-lg mt-1.5">
+                                        <p className="font-black text-slate-900 text-lg mt-1.5">
                                             {nextPatient.patientId?.name || 'Next Patient'}
                                         </p>
                                         <p className="text-xs text-slate-600 font-medium mt-0.5">
@@ -353,13 +368,13 @@ const DoctorQueuePage = () => {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => handleOpenPatientDetails(nextPatient)}
-                                            className="px-3.5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 transition"
+                                            className="px-3.5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 transition shadow-xs"
                                         >
                                             <Eye className="w-3.5 h-3.5" /> Details
                                         </button>
                                         <button
                                             onClick={() => handleStartConsultation(nextPatient._id)}
-                                            className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-md shadow-amber-600/20"
+                                            className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-md shadow-amber-600/20 active:scale-95"
                                         >
                                             Call Patient into Room
                                         </button>
@@ -369,12 +384,12 @@ const DoctorQueuePage = () => {
                         </div>
 
                         {/* Right Col: Full Waiting Queue List */}
-                        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm h-fit">
+                        <div className="card-modern p-6 border border-slate-200/80 shadow-sm h-fit">
                             <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
                                 <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
                                     <Clock className="w-5 h-5 text-amber-600" /> Waiting List ({waitingQueue?.length || 0})
                                 </h3>
-                                <span className="text-[11px] font-bold text-slate-400 uppercase">Live OPD Tokens</span>
+                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Live OPD Tokens</span>
                             </div>
 
                             <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
@@ -382,11 +397,11 @@ const DoctorQueuePage = () => {
                                     waitingQueue.map((item, idx) => (
                                         <div
                                             key={item._id}
-                                            className="p-4 bg-slate-50 hover:bg-slate-100/80 transition rounded-2xl border border-slate-200 text-xs space-y-2.5"
+                                            className="p-4 panel-subtle hover:bg-teal-50/40 hover:border-teal-200 transition-all rounded-2xl border border-slate-200/80 text-xs space-y-2.5 shadow-xs"
                                         >
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-black text-teal-700 bg-teal-100/70 px-2 py-0.5 rounded-md">
+                                                    <span className="font-black text-teal-700 bg-teal-100/70 px-2 py-0.5 rounded-md font-mono">
                                                         #{item.queuePosition || idx + 1}
                                                     </span>
                                                     <span className="font-bold text-slate-900 text-sm">
@@ -407,19 +422,19 @@ const DoctorQueuePage = () => {
                                             </p>
 
                                             <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
-                                                <span className="text-[11px] text-slate-400">
+                                                <span className="text-[11px] text-slate-400 font-medium">
                                                     Wait: ~{item.estimatedWaitTimeMinutes || 15} mins
                                                 </span>
                                                 <div className="flex items-center gap-1.5">
                                                     <button
                                                         onClick={() => handleOpenPatientDetails(item)}
-                                                        className="text-slate-600 hover:text-slate-900 font-bold px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-[11px] flex items-center gap-1 transition"
+                                                        className="text-slate-600 hover:text-slate-900 font-bold px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-[11px] flex items-center gap-1 transition shadow-xs"
                                                     >
                                                         <Eye className="w-3 h-3" /> View
                                                     </button>
                                                     <button
                                                         onClick={() => handleStartConsultation(item._id)}
-                                                        className="text-teal-700 hover:text-teal-800 font-bold px-2.5 py-1 bg-teal-50 border border-teal-200 rounded-lg text-[11px] transition"
+                                                        className="text-teal-700 hover:text-teal-800 font-bold px-2.5 py-1 bg-teal-50 border border-teal-200 rounded-lg text-[11px] transition shadow-xs hover:bg-teal-100"
                                                     >
                                                         Call
                                                     </button>
@@ -428,7 +443,7 @@ const DoctorQueuePage = () => {
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="p-8 text-center text-slate-400 text-xs bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                    <div className="p-8 text-center text-slate-400 text-xs bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
                                         No waiting patients in queue.
                                     </div>
                                 )}

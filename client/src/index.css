@@ -39,18 +39,40 @@
   box-shadow: 0 8px 32px 0 rgba(6, 78, 59, 0.37);
 }
 
-/* Triage Badges */
-.badge-emergency {
-  @apply bg-red-100/90 text-red-700 border border-red-300 font-semibold px-2.5 py-0.5 rounded-full text-xs shadow-sm;
-  animation: pulseRed 2s infinite ease-in-out;
+/* Modern 2026 Card & Panel System */
+.card-modern {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.badge-high {
-  @apply bg-amber-100/90 text-amber-800 border border-amber-300 font-semibold px-2.5 py-0.5 rounded-full text-xs shadow-sm;
+.card-interactive {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 10px 25px -5px rgba(15, 23, 42, 0.04);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.badge-normal {
-  @apply bg-emerald-100/90 text-emerald-800 border border-emerald-300 font-semibold px-2.5 py-0.5 rounded-full text-xs shadow-sm;
+.card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: rgba(20, 184, 166, 0.45);
+  box-shadow: 0 20px 35px -10px rgba(13, 148, 136, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+}
+
+.panel-subtle {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 1rem;
+}
+
+.hero-banner-light {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 45%, #ecfeff 100%);
+  border: 1px solid rgba(204, 251, 241, 0.9);
+  box-shadow: 0 10px 30px -10px rgba(13, 148, 136, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+  border-radius: 1.75rem;
 }
 
 /* Glow & Neon Effects */
@@ -68,28 +90,37 @@
 
 /* Animations */
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
+
   50% {
     transform: translateY(-8px) rotate(0.5deg);
   }
 }
 
 @keyframes float-reverse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
+
   50% {
     transform: translateY(8px) rotate(-0.5deg);
   }
 }
 
 @keyframes pulseGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.6;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.05);
@@ -97,29 +128,48 @@
 }
 
 @keyframes pulseRed {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
   }
+
   50% {
     box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
   }
 }
 
 @keyframes heartbeat {
-  0% { transform: scale(1); }
-  14% { transform: scale(1.15); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.1); }
-  70% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  14% {
+    transform: scale(1.15);
+  }
+
+  28% {
+    transform: scale(1);
+  }
+
+  42% {
+    transform: scale(1.1);
+  }
+
+  70% {
+    transform: scale(1);
+  }
 }
 
 @keyframes auroraFlow {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -151,13 +201,16 @@
   width: 7px;
   height: 7px;
 }
+
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }

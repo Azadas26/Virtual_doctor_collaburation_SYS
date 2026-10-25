@@ -160,10 +160,10 @@ const BookAppointmentPage = () => {
 
                 {bookedAppointment ? (
                     /* Confirmation Ticket Card */
-                    <div className="bg-white p-8 rounded-3xl border-2 border-emerald-500 shadow-xl space-y-6 animate-in fade-in">
+                    <div className="card-modern p-8 border-2 border-emerald-500 shadow-xl space-y-6 animate-in fade-in">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center font-bold">
+                                <div className="w-12 h-12 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-2xl flex items-center justify-center font-bold shadow-xs">
                                     <CheckCircle2 className="w-7 h-7" />
                                 </div>
                                 <div>
@@ -173,12 +173,12 @@ const BookAppointmentPage = () => {
                                     </p>
                                 </div>
                             </div>
-                            <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3.5 py-1 rounded-full uppercase">
+                            <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold px-3.5 py-1 rounded-full uppercase shadow-xs">
                                 {bookedAppointment.appointment?.status}
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100 text-xs">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 panel-subtle p-5 border border-slate-200/80 text-xs shadow-xs">
                             <div>
                                 <span className="text-slate-500 font-semibold block mb-1">Attending Physician</span>
                                 <p className="font-black text-slate-900 text-base">Dr. {bookedAppointment.doctor?.name}</p>
@@ -198,10 +198,10 @@ const BookAppointmentPage = () => {
 
                         {/* Smart Allocation Reason Badges */}
                         <div className="pt-2">
-                            <span className="text-xs font-bold text-slate-500 uppercase block mb-2">Doctor Allocation Details:</span>
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Doctor Allocation Details:</span>
                             <div className="space-y-1.5">
                                 {bookedAppointment.appointment?.allocationReason?.map((reason, i) => (
-                                    <div key={i} className="text-xs text-slate-700 bg-teal-50/80 border border-teal-100 p-2.5 rounded-xl flex items-center gap-2">
+                                    <div key={i} className="text-xs text-slate-700 bg-teal-50/80 border border-teal-200/80 p-2.5 rounded-xl flex items-center gap-2">
                                         <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
                                         <span className="font-medium">{reason}</span>
                                     </div>
@@ -212,7 +212,7 @@ const BookAppointmentPage = () => {
                         <div className="flex gap-4 pt-4 border-t border-slate-100">
                             <button
                                 onClick={() => navigate('/patient/appointments')}
-                                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-2xl text-xs shadow-md shadow-teal-600/20 transition flex items-center justify-center gap-2"
+                                className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-2xl text-xs shadow-md shadow-teal-600/20 transition flex items-center justify-center gap-2 active:scale-95"
                             >
                                 Go to My Appointments & Live Queue Tracker <ArrowRight className="w-4 h-4" />
                             </button>
@@ -220,7 +220,7 @@ const BookAppointmentPage = () => {
                     </div>
                 ) : (
                     /* Booking Form */
-                    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-7">
+                    <div className="card-modern p-8 border border-slate-200/80 shadow-sm space-y-7">
                         <form onSubmit={handleEvaluateTriage} className="space-y-6">
                             {/* Hospital & Department */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

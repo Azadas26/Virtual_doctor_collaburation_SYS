@@ -159,6 +159,7 @@ exports.bookAppointment = async (req, res) => {
                 if (!candidateDoctors.some(d => String(d._id) === String(chosenDoc._id))) {
                     candidateDoctors.push(chosenDoc);
                 }
+                selectedDoctor = chosenDoc;
                 const docDisplayName = chosenDoc.doctorName.startsWith('Dr.') ? chosenDoc.doctorName : `Dr. ${chosenDoc.doctorName}`;
                 allocationReason.push(`Patient explicitly booked preferred physician: ${docDisplayName} (${chosenDoc.specialization})`);
             }

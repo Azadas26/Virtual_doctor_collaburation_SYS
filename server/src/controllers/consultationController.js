@@ -1,5 +1,6 @@
 const Queue = require('../models/Queue');
 const Doctor = require('../models/Doctor');
+const Hospital = require('../models/Hospital');
 const Appointment = require('../models/Appointment');
 const Consultation = require('../models/Consultation');
 const Patient = require('../models/Patient');
@@ -7,27 +8,98 @@ const TemporaryContract = require('../models/TemporaryContract');
 const { logAudit } = require('../utils/auditLogger');
 
 // @desc Get Doctor's live Queue visualization & Shift Schedule
-// @route GET /api/doctors/queue
+// @route GET /api/consultations/queue
 // @access Private (FIXED_DOCTOR, TEMPORARY_DOCTOR, HOSPITAL_ADMIN)
 exports.getDoctorQueue = async (req, res) => {
     try {
         let doctorId = req.query.doctorId;
         let doctor = null;
+        let hospital = null;
+        let hospitalDoctors = [];
 
-        if (doctorId) {
-            doctor = await Doctor.findById(doctorId).populate('hospitalId', 'name address district state contactNumber');
-        } else {
-            doctor = await Doctor.findOne({ userId: req.user._id, status: 'ACTIVE' }).populate('hospitalId', 'name address district state contactNumber');
-            if (!doctor) {
-                doctor = await Doctor.findOne({ userId: req.user._id }).populate('hospitalId', 'name address district state contactNumber');
+        // 1. If HOSPITAL_ADMIN, find their hospital and all associated doctors
+        if (req.user.role === 'HOSPITAL_ADMIN') {
+            hospital = await Hospital.findOne({ adminUserId: req.user._id });
+            if (!hospital && req.user.hospitalId) {
+                hospital = await Hospital.findById(req.user.hospitalId);
             }
-        }
 
-        if (!doctor) {
-            return res.status(404).json({
-                success: false,
-                message: 'No doctor profile or active appointment queue found for this account.'
-            });
+            if (hospital) {
+                const docs = await Doctor.find({ hospitalId: hospital._id, status: 'ACTIVE' });
+                hospitalDoctors = await Promise.all(docs.map(async (doc) => {
+                    const queueCount = await Appointment.countDocuments({
+                        doctorId: doc._id,
+                        status: { $in: ['BOOKED', 'CHECKED_IN', 'WAITING'] }
+                    });
+                    const inConsult = await Appointment.findOne({
+                        doctorId: doc._id,
+                        status: 'IN_CONSULTATION'
+                    }).populate('patientId', 'name');
+                    return {
+                        _id: doc._id,
+                        id: doc._id,
+                        doctorName: doc.doctorName,
+                        specialization: doc.specialization,
+                        department: doc.department,
+                        doctorType: doc.doctorType,
+                        workingHours: doc.workingHours,
+                        waitingCount: queueCount,
+                        currentPatientName: inConsult?.patientId?.name || null
+                    };
+                }));
+
+                if (doctorId) {
+                    doctor = await Doctor.findOne({ _id: doctorId, hospitalId: hospital._id }).populate('hospitalId');
+                }
+                if (!doctor && docs.length > 0) {
+                    // Pick doctor with active queue or the first doctor
+                    const docWithQueue = hospitalDoctors.find(d => d.waitingCount > 0);
+                    const pickId = docWithQueue ? docWithQueue._id : docs[0]._id;
+                    doctor = await Doctor.findById(pickId).populate('hospitalId');
+                }
+            }
+
+            if (!doctor) {
+                return res.json({
+                    success: true,
+                    hospital,
+                    hospitalDoctors: hospitalDoctors || [],
+                    doctor: null,
+                    activeContract: null,
+                    summary: { totalToday: 0, completedCount: 0, waitingCount: 0 },
+                    currentPatient: null,
+                    nextPatient: null,
+                    waitingQueue: [],
+                    completedQueue: [],
+                    message: hospitalDoctors.length === 0 ? 'No active doctors assigned to this hospital OPD yet.' : 'Select a doctor to view their live patient queue.'
+                });
+            }
+        } else {
+            // 2. Doctor user (FIXED_DOCTOR or TEMPORARY_DOCTOR)
+            if (doctorId) {
+                doctor = await Doctor.findById(doctorId).populate('hospitalId', 'name address district state contactNumber');
+            } else {
+                doctor = await Doctor.findOne({ userId: req.user._id, status: 'ACTIVE' }).populate('hospitalId', 'name address district state contactNumber');
+                if (!doctor) {
+                    doctor = await Doctor.findOne({ userId: req.user._id }).populate('hospitalId', 'name address district state contactNumber');
+                }
+            }
+
+            if (!doctor) {
+                return res.json({
+                    success: true,
+                    doctor: null,
+                    hospital: null,
+                    hospitalDoctors: [],
+                    activeContract: null,
+                    summary: { totalToday: 0, completedCount: 0, waitingCount: 0 },
+                    currentPatient: null,
+                    nextPatient: null,
+                    waitingQueue: [],
+                    completedQueue: [],
+                    message: 'No active hospital OPD assignment yet. Please review and accept a hospital contract in the Contracts page.'
+                });
+            }
         }
 
         doctorId = doctor._id;
@@ -49,18 +121,19 @@ exports.getDoctorQueue = async (req, res) => {
         const endOfDay = new Date();
         endOfDay.setHours(23, 59, 59, 999);
 
-        // Resilient query: appointments for today OR currently active in queue
+        // Resilient query: all active queue appointments (BOOKED, CHECKED_IN, WAITING, IN_CONSULTATION)
+        // OR appointments created/scheduled for today/yesterday
         const appointments = await Appointment.find({
             doctorId,
             $or: [
+                {
+                    status: { $in: ['IN_CONSULTATION', 'WAITING', 'CHECKED_IN', 'BOOKED'] }
+                },
                 {
                     appointmentDate: {
                         $gte: new Date(startOfDay.getTime() - 24 * 60 * 60 * 1000),
                         $lte: new Date(endOfDay.getTime() + 24 * 60 * 60 * 1000)
                     }
-                },
-                {
-                    status: { $in: ['IN_CONSULTATION', 'WAITING', 'CHECKED_IN'] }
                 }
             ]
         })
@@ -75,8 +148,11 @@ exports.getDoctorQueue = async (req, res) => {
 
         return res.json({
             success: true,
+            hospital: hospital || (doctor?.hospitalId ? doctor.hospitalId : null),
+            hospitalDoctors: hospitalDoctors,
             doctor: {
                 id: doctor._id,
+                _id: doctor._id,
                 doctorName: doctor.doctorName,
                 specialization: doctor.specialization,
                 department: doctor.department,
@@ -118,8 +194,8 @@ exports.getDoctorQueue = async (req, res) => {
 };
 
 // @desc Start consultation with next patient in queue
-// @route PUT /api/appointments/:id/start-consultation
-// @access Private (FIXED_DOCTOR, TEMPORARY_DOCTOR)
+// @route PUT /api/consultations/appointments/:id/start
+// @access Private (FIXED_DOCTOR, TEMPORARY_DOCTOR, HOSPITAL_ADMIN)
 exports.startConsultation = async (req, res) => {
     try {
         const appointment = await Appointment.findById(req.params.id)
@@ -133,8 +209,21 @@ exports.startConsultation = async (req, res) => {
             });
         }
 
+        // Reset any existing in-consultation appointment for this doctor back to WAITING
+        await Appointment.updateMany(
+            { doctorId: appointment.doctorId, status: 'IN_CONSULTATION', _id: { $ne: appointment._id } },
+            { $set: { status: 'WAITING' } }
+        );
+
         appointment.status = 'IN_CONSULTATION';
         await appointment.save();
+
+        // Update Queue collection if exists
+        const dateStr = new Date(appointment.appointmentDate || Date.now()).toISOString().split('T')[0];
+        await Queue.findOneAndUpdate(
+            { doctorId: appointment.doctorId, date: dateStr },
+            { $set: { currentAppointmentId: appointment._id } }
+        );
 
         await logAudit({
             req,
@@ -146,7 +235,7 @@ exports.startConsultation = async (req, res) => {
 
         return res.json({
             success: true,
-            message: 'Consultation started.',
+            message: 'Consultation started with patient ' + (appointment.patientId?.name || ''),
             appointment
         });
 
@@ -207,6 +296,17 @@ exports.completeConsultation = async (req, res) => {
         // Mark appointment completed
         appointment.status = 'COMPLETED';
         await appointment.save();
+
+        // Update Queue collection if exists
+        const dateStr = new Date(appointment.appointmentDate || Date.now()).toISOString().split('T')[0];
+        await Queue.findOneAndUpdate(
+            { doctorId: appointment.doctorId, date: dateStr },
+            {
+                $set: { currentAppointmentId: null },
+                $pull: { waitingList: appointment._id },
+                $addToSet: { completedList: appointment._id }
+            }
+        );
 
         await logAudit({
             req,

@@ -207,7 +207,7 @@ exports.addFixedDoctor = async (req, res) => {
 exports.verifyDoctorProfile = async (req, res) => {
     try {
         const { profileId } = req.params;
-        const { status, notes } = req.body; // status: 'VERIFIED' | 'REJECTED' | 'UNDER_REVIEW'
+        const { status, notes, verificationNotes } = req.body; // status: 'VERIFIED' | 'REJECTED' | 'UNDER_REVIEW'
 
         const profile = await TemporaryDoctorProfile.findById(profileId);
         if (!profile) {
@@ -217,23 +217,26 @@ exports.verifyDoctorProfile = async (req, res) => {
             });
         }
 
-        profile.verificationStatus = status;
-        profile.verificationNotes = notes || '';
+        const newStatus = status || 'VERIFIED';
+        profile.verificationStatus = newStatus;
+        if (notes !== undefined || verificationNotes !== undefined) {
+            profile.verificationNotes = notes !== undefined ? notes : verificationNotes;
+        }
         profile.verifiedByHospitalAdminId = req.user._id;
         profile.verifiedAt = new Date();
         await profile.save();
 
         await logAudit({
             req,
-            action: `VERIFY_DOCTOR_${status}`,
+            action: `VERIFY_DOCTOR_${newStatus}`,
             resource: 'TemporaryDoctorProfile',
             resourceId: profile._id,
-            details: { doctorName: profile.doctorName, status, notes }
+            details: { doctorName: profile.doctorName, status: newStatus, notes: profile.verificationNotes }
         });
 
         return res.json({
             success: true,
-            message: `Doctor verification status updated to '${status}'.`,
+            message: `Doctor verification status updated to '${newStatus}'.`,
             profile
         });
 
@@ -253,7 +256,7 @@ exports.getHospitalRequests = async (req, res) => {
         const hospital = await getAdminHospital(req.user._id);
 
         const requests = await TemporaryDoctorRequest.find({ hospitalId: hospital._id })
-            .populate('tempProfileId', 'doctorName medicalQualification specialization registrationNumber verificationStatus documents')
+            .populate('tempProfileId', 'doctorName email contactNumber medicalQualification specialization registrationNumber registrationAuthority yearsOfExperience previousHospital currentProfessionalStatus verificationStatus verificationNotes verifiedAt reliabilityRating verificationDocuments')
             .populate('requirementId', 'department specialization requiredDate startTime endTime')
             .sort({ createdAt: -1 });
 

@@ -124,19 +124,40 @@ const TempDoctorProfilePage = () => {
                                     <FileText className="w-5 h-5 text-teal-600" /> Uploaded Qualification & MCI Certificates
                                 </h3>
 
-                                {profile?.documents && profile.documents.length > 0 ? (
+                                {profile?.verificationDocuments && profile.verificationDocuments.length > 0 ? (
                                     <div className="space-y-3">
-                                        {profile.documents.map((doc, idx) => (
-                                            <div key={idx} className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs flex items-center justify-between">
-                                                <div>
-                                                    <p className="font-bold text-slate-900">{doc.documentType}</p>
-                                                    <p className="text-slate-500 font-mono text-[11px]">Doc #: {doc.documentNumber}</p>
+                                        {profile.verificationDocuments.map((doc, idx) => {
+                                            const isPdf = doc.fileUrl?.toLowerCase().endsWith('.pdf');
+                                            return (
+                                                <div key={idx} className="p-4 bg-slate-50 hover:bg-slate-100/80 transition rounded-2xl border border-slate-200 text-xs flex items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${isPdf ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                            {isPdf ? 'PDF' : 'IMG'}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-slate-900 text-sm">{doc.documentType}</p>
+                                                            <p className="text-slate-500 font-mono text-[11px]">
+                                                                {doc.documentNumber ? `Doc #: ${doc.documentNumber}` : 'Document Attached'}
+                                                                {doc.uploadedAt && ` • ${new Date(doc.uploadedAt).toLocaleDateString()}`}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <a
+                                                            href={doc.fileUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-teal-500 hover:text-teal-700 text-slate-700 rounded-xl font-bold text-xs shadow-sm transition"
+                                                        >
+                                                            <FileText className="w-3.5 h-3.5" /> View Certificate
+                                                        </a>
+                                                        <span className="bg-teal-100 text-teal-800 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                                                            Attached
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <span className="bg-teal-100 text-teal-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
-                                                    Attached
-                                                </span>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <div className="p-8 text-center text-slate-400 text-xs bg-slate-50 rounded-2xl">

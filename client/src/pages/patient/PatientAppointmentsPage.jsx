@@ -88,7 +88,7 @@ const PatientAppointmentsPage = () => {
 
                                     <p className="text-slate-600 text-xs flex items-center gap-2">
                                         <Stethoscope className="w-4 h-4 text-teal-600" />
-                                        Doctor: <span className="font-bold text-slate-900">{apt.doctorId?.name}</span> ({apt.doctorId?.doctorType || 'Specialist'}) • {apt.department}
+                                        Doctor: <span className="font-bold text-slate-900">{apt.doctorId?.doctorName || apt.doctorId?.name || 'Assigned Duty Doctor'}</span> ({apt.doctorId?.doctorType || 'Specialist'}) • {apt.department}
                                     </p>
 
                                     <p className="text-slate-500 text-xs">

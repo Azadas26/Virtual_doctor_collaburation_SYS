@@ -114,34 +114,34 @@ const LandingPage = () => {
                             </Link>
                         </div>
 
-                        {/* Metrics Cards */}
+                        {/* Metrics Cards — Elevated Card Modern */}
                         <div className="pt-6 grid grid-cols-3 gap-3 border-t border-slate-200/80">
-                            <div className="p-3 bg-white/80 rounded-2xl border border-slate-200/70 shadow-sm">
-                                <div className="text-2xl sm:text-3xl font-black text-teal-700 font-mono">
+                            <div className="card-modern p-4 text-left border border-slate-200/80 shadow-xs hover:border-teal-300 transition-colors">
+                                <div className="text-2xl sm:text-3xl font-black text-teal-700 font-mono tracking-tight">
                                     3 Hubs
                                 </div>
-                                <div className="text-xs font-semibold text-slate-500 mt-0.5">Apex Govt Centers</div>
+                                <div className="text-xs font-bold text-slate-500 mt-0.5">Apex Govt Centers</div>
                             </div>
 
-                            <div className="p-3 bg-white/80 rounded-2xl border border-slate-200/70 shadow-sm">
-                                <div className="text-2xl sm:text-3xl font-black text-cyan-700 font-mono">
+                            <div className="card-modern p-4 text-left border border-slate-200/80 shadow-xs hover:border-cyan-300 transition-colors">
+                                <div className="text-2xl sm:text-3xl font-black text-cyan-700 font-mono tracking-tight">
                                     -42%
                                 </div>
-                                <div className="text-xs font-semibold text-slate-500 mt-0.5">Peak Wait Times</div>
+                                <div className="text-xs font-bold text-slate-500 mt-0.5">Peak Wait Times</div>
                             </div>
 
-                            <div className="p-3 bg-white/80 rounded-2xl border border-slate-200/70 shadow-sm">
-                                <div className="text-2xl sm:text-3xl font-black text-emerald-700 font-mono">
+                            <div className="card-modern p-4 text-left border border-slate-200/80 shadow-xs hover:border-emerald-300 transition-colors">
+                                <div className="text-2xl sm:text-3xl font-black text-emerald-700 font-mono tracking-tight">
                                     100%
                                 </div>
-                                <div className="text-xs font-semibold text-slate-500 mt-0.5">Voluntary Dignity</div>
+                                <div className="text-xs font-bold text-slate-500 mt-0.5">Voluntary Dignity</div>
                             </div>
                         </div>
                     </div>
 
                     {/* Right Hero Column: 3D Canvas in Luminous Pearl Card */}
                     <div className="lg:col-span-5 relative flex items-center justify-center">
-                        <div className="relative w-full aspect-square max-w-[500px] rounded-3xl overflow-hidden bg-gradient-to-b from-white via-teal-50/30 to-white p-2 shadow-2xl shadow-teal-900/10 border border-teal-200/80">
+                        <div className="relative w-full aspect-square max-w-[500px] rounded-3xl overflow-hidden bg-gradient-to-b from-white via-teal-50/40 to-white p-2.5 shadow-2xl shadow-teal-900/10 border border-teal-200/80">
                             {/* Interactive 3D Medical Core */}
                             <Medical3DCanvas />
                         </div>
@@ -149,15 +149,15 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* Live Hospital Telemetry — Clean White Surface */}
+            {/* Live Hospital Telemetry — Modern Interactive Cards */}
             <section className="py-16 bg-slate-50/70 border-b border-slate-200/80">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
                         <div>
                             <span className="text-teal-700 font-bold uppercase text-xs tracking-widest flex items-center gap-2">
-                                <Activity className="w-4 h-4 text-teal-600" /> Live Health Network Telemetry
+                                <Activity className="w-4 h-4 text-teal-600 animate-pulse" /> Live Health Network Telemetry
                             </span>
-                            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
+                            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
                                 Real-Time Government Hospital Load
                             </h2>
                         </div>
@@ -173,20 +173,20 @@ const LandingPage = () => {
                         {hospitalStats.map((hosp, idx) => (
                             <div
                                 key={idx}
-                                className="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-teal-400 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group shadow-sm flex flex-col justify-between"
+                                className="card-interactive p-6 flex flex-col justify-between group"
                             >
                                 <div>
                                     <div className="flex items-start justify-between">
-                                        <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center">
+                                        <div className="w-11 h-11 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
                                             <Hospital className="w-5 h-5" />
                                         </div>
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border flex items-center gap-1.5 ${hosp.badgeBg}`}>
+                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border flex items-center gap-1.5 shadow-xs ${hosp.badgeBg}`}>
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                             {hosp.status}
                                         </span>
                                     </div>
 
-                                    <h3 className="text-lg font-bold text-slate-900 mt-4 group-hover:text-teal-700 transition-colors">
+                                    <h3 className="text-lg font-black text-slate-900 mt-4 group-hover:text-teal-700 transition-colors">
                                         {hosp.name}
                                     </h3>
                                     <p className="text-xs text-slate-500 mt-1">{hosp.dept}</p>
@@ -195,15 +195,15 @@ const LandingPage = () => {
                                 <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
                                     <div>
                                         <span className="text-slate-400 block font-medium">OP Queue</span>
-                                        <span className="font-mono text-base font-extrabold text-slate-900">{hosp.queue} Waiting</span>
+                                        <span className="font-mono text-base font-black text-slate-900">{hosp.queue} Waiting</span>
                                     </div>
                                     <div>
                                         <span className="text-slate-400 block font-medium">Voluntary Aid</span>
-                                        <span className="font-mono text-base font-extrabold text-teal-600">+{hosp.tempDocs} Doctors</span>
+                                        <span className="font-mono text-base font-black text-teal-600">+{hosp.tempDocs} Doctors</span>
                                     </div>
                                     <div className="text-right">
                                         <span className="text-slate-400 block font-medium">Capacity</span>
-                                        <span className="font-mono text-base font-extrabold text-amber-600">{hosp.capacity}</span>
+                                        <span className="font-mono text-base font-black text-amber-600">{hosp.capacity}</span>
                                     </div>
                                 </div>
                             </div>
@@ -212,7 +212,7 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* Core Innovation Concept — Clean White Architecture */}
+            {/* Core Innovation Concept — Modern 2026 Cards */}
             <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <span className="text-teal-700 font-bold uppercase text-xs tracking-widest">
@@ -227,8 +227,8 @@ const LandingPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-amber-300 transition-all duration-300">
-                        <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center font-black text-lg mb-6">
+                    <div className="card-interactive p-8 group">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center font-black text-lg mb-6 group-hover:scale-105 transition-transform shadow-xs">
                             01
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 mb-2">Hospital Dynamic Demands</h3>
@@ -237,8 +237,8 @@ const LandingPage = () => {
                         </p>
                     </div>
 
-                    <div className="p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300">
-                        <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center font-black text-lg mb-6">
+                    <div className="card-interactive p-8 group">
+                        <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center font-black text-lg mb-6 group-hover:scale-105 transition-transform shadow-xs">
                             02
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 mb-2">Voluntary Self-Scheduling</h3>
@@ -247,8 +247,8 @@ const LandingPage = () => {
                         </p>
                     </div>
 
-                    <div className="p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-cyan-300 transition-all duration-300">
-                        <div className="w-12 h-12 rounded-2xl bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center font-black text-lg mb-6">
+                    <div className="card-interactive p-8 group">
+                        <div className="w-12 h-12 rounded-2xl bg-cyan-50 border border-cyan-200 text-cyan-700 flex items-center justify-center font-black text-lg mb-6 group-hover:scale-105 transition-transform shadow-xs">
                             03
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 mb-2">Digital Contracts & Live Queue</h3>
@@ -259,7 +259,7 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* 5-Role Dedicated Portals — Clean White Cards */}
+            {/* 5-Role Dedicated Portals — Interactive Modern Cards */}
             <section className="py-20 bg-slate-50/70 border-t border-slate-200/80">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-14">
@@ -272,56 +272,56 @@ const LandingPage = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
                         <Link
                             to="/login"
-                            className="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-purple-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center group shadow-sm"
+                            className="card-interactive p-6 text-center group"
                         >
-                            <div className="w-12 h-12 bg-purple-50 border border-purple-200 text-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <div className="w-12 h-12 bg-purple-50 border border-purple-200 text-purple-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-xs">
                                 <ShieldCheck className="w-6 h-6" />
                             </div>
-                            <h4 className="font-bold text-slate-900 text-base">Main Admin</h4>
+                            <h4 className="font-extrabold text-slate-900 text-base">Main Admin</h4>
                             <p className="text-slate-500 text-xs mt-1">Platform governance, audit logs & hospital verification</p>
                         </Link>
 
                         <Link
                             to="/login"
-                            className="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-blue-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center group shadow-sm"
+                            className="card-interactive p-6 text-center group"
                         >
-                            <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <div className="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-xs">
                                 <Building2 className="w-6 h-6" />
                             </div>
-                            <h4 className="font-bold text-slate-900 text-base">Hospital Admin</h4>
+                            <h4 className="font-extrabold text-slate-900 text-base">Hospital Admin</h4>
                             <p className="text-slate-500 text-xs mt-1">OP slot manager, requirement contracts & doctor roster</p>
                         </Link>
 
                         <Link
                             to="/login"
-                            className="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-teal-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center group shadow-sm"
+                            className="card-interactive p-6 text-center group"
                         >
-                            <div className="w-12 h-12 bg-teal-50 border border-teal-200 text-teal-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <div className="w-12 h-12 bg-teal-50 border border-teal-200 text-teal-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-xs">
                                 <Stethoscope className="w-6 h-6" />
                             </div>
-                            <h4 className="font-bold text-slate-900 text-base">Fixed Doctor</h4>
+                            <h4 className="font-extrabold text-slate-900 text-base">Fixed Doctor</h4>
                             <p className="text-slate-500 text-xs mt-1">Permanent hospital OPD consultation and triage queue</p>
                         </Link>
 
                         <Link
                             to="/login"
-                            className="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-amber-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center group shadow-sm"
+                            className="card-interactive p-6 text-center group"
                         >
-                            <div className="w-12 h-12 bg-amber-50 border border-amber-200 text-amber-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <div className="w-12 h-12 bg-amber-50 border border-amber-200 text-amber-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-xs">
                                 <UserCheck className="w-6 h-6" />
                             </div>
-                            <h4 className="font-bold text-slate-900 text-base">Temp Doctor</h4>
+                            <h4 className="font-extrabold text-slate-900 text-base">Temp Doctor</h4>
                             <p className="text-slate-500 text-xs mt-1">Voluntary registration, contracts & shift calendar</p>
                         </Link>
 
                         <Link
                             to="/login"
-                            className="p-6 rounded-3xl bg-white border border-slate-200/90 hover:border-emerald-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center group shadow-sm"
+                            className="card-interactive p-6 text-center group"
                         >
-                            <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-xs">
                                 <Users className="w-6 h-6" />
                             </div>
-                            <h4 className="font-bold text-slate-900 text-base">Patient</h4>
+                            <h4 className="font-extrabold text-slate-900 text-base">Patient</h4>
                             <p className="text-slate-500 text-xs mt-1">Triage appointment, live countdown & consultation history</p>
                         </Link>
                     </div>

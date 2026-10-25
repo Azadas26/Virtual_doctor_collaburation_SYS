@@ -19,6 +19,7 @@ import AdminReportsPage from './pages/admin/AdminReportsPage';
 
 // Hospital Sub-Admin Pages
 import HospitalDashboardPage from './pages/hospital/HospitalDashboardPage';
+import HospitalQueuePage from './pages/hospital/HospitalQueuePage';
 import HospitalDoctorsPage from './pages/hospital/HospitalDoctorsPage';
 import HospitalRequirementsPage from './pages/hospital/HospitalRequirementsPage';
 import HospitalRequestsPage from './pages/hospital/HospitalRequestsPage';
@@ -107,6 +108,14 @@ function App() {
                                 }
                             />
                             <Route
+                                path="/hospital/queue"
+                                element={
+                                    <ProtectedRoute allowedRoles={['HOSPITAL_ADMIN']}>
+                                        <HospitalQueuePage />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
                                 path="/hospital/doctors"
                                 element={
                                     <ProtectedRoute allowedRoles={['HOSPITAL_ADMIN']}>
@@ -151,7 +160,7 @@ function App() {
                             <Route
                                 path="/doctor/queue"
                                 element={
-                                    <ProtectedRoute allowedRoles={['FIXED_DOCTOR', 'TEMPORARY_DOCTOR']}>
+                                    <ProtectedRoute allowedRoles={['FIXED_DOCTOR', 'TEMPORARY_DOCTOR', 'HOSPITAL_ADMIN']}>
                                         <DoctorQueuePage />
                                     </ProtectedRoute>
                                 }
