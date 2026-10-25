@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import {
     Search,
     MapPin,
@@ -11,7 +12,8 @@ import {
     ShieldCheck,
     Navigation,
     ArrowRight,
-    Filter
+    Filter,
+    LogIn
 } from 'lucide-react';
 
 const HospitalSearchPage = () => {
@@ -22,6 +24,7 @@ const HospitalSearchPage = () => {
     const [department, setDepartment] = useState('');
     const [userCoords, setUserCoords] = useState(null);
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const fetchHospitals = async () => {
         setLoading(true);
@@ -214,22 +217,52 @@ const HospitalSearchPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Actions */}
+                                {/* Actions — role-aware buttons */}
                                 <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-                                    <button
-                                        onClick={() => navigate(`/patient/book-appointment?hospitalId=${hosp._id}`)}
-                                        className="flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-teal-600/20 transition-all hover:scale-[1.02] active:scale-95"
-                                    >
-                                        <Stethoscope className="w-4 h-4" /> Book OP Ticket
-                                    </button>
+                                    {/* Book OP Ticket — PATIENT only */}
+                                    {(!user || user.role === 'PATIENT') && (
+                                        <button
+                                            onClick={() => {
+                                                if (!user) {
+                                                    navigate('/login');
+                                                } else {
+                                                    navigate(`/patient/book-appointment?hospitalId=${hosp._id}`);
+                                                }
+                                            }}
+                                            className="flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-teal-600/20 transition-all hover:scale-[1.02] active:scale-95"
+                                        >
+                                            {!user ? (
+                                                <><LogIn className="w-4 h-4" /> Login to Book OP Ticket</>
+                                            ) : (
+                                                <><Stethoscope className="w-4 h-4" /> Book OP Ticket</>
+                                            )}
+                                        </button>
+                                    )}
 
-                                    <button
-                                        onClick={() => navigate(`/temp-doctor/hospitals?hospitalId=${hosp._id}`)}
-                                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-3 rounded-xl text-xs transition"
-                                        title="Voluntary Doctor Interest"
-                                    >
-                                        Temp Doctor Slots
-                                    </button>
+                                    {/* Temp Doctor Slots — TEMPORARY_DOCTOR only */}
+                                    {(!user || user.role === 'TEMPORARY_DOCTOR') && (
+                                        <button
+                                            onClick={() => {
+                                                if (!user) {
+                                                    navigate('/login');
+                                                } else {
+                                                    navigate(`/temp-doctor/hospitals?hospitalId=${hosp._id}`);
+                                                }
+                                            }}
+                                            className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 px-3 rounded-xl text-xs transition"
+                                            title="Voluntary Doctor Interest"
+                                        >
+                                            Temp Doctor Slots
+                                        </button>
+                                    )}
+
+                                    {/* Other roles (admin, hospital admin, fixed doctor) see View Details only */}
+                                    {user && user.role !== 'PATIENT' && user.role !== 'TEMPORARY_DOCTOR' && (
+                                        <div className="flex-1 text-center bg-slate-100 text-slate-500 font-semibold py-2.5 px-3 rounded-xl text-xs">
+                                            <Building2 className="w-4 h-4 inline mr-1.5" />
+                                            View Only — Booking restricted to patients
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}

@@ -126,26 +126,53 @@ const LandingPage = () => {
                             Converting OPD tokens into online queues reduces physical waiting rooms, but <strong className="text-teal-700 font-semibold">does not cure doctor shortages</strong>. e-Health Bridge connects government hospitals with verified retired, freelance, and leave-period physicians during peak rush hours.
                         </p>
 
-                        {/* Interactive CTAs */}
+                        {/* Interactive CTAs — role-aware */}
                         <div className="pt-2 flex flex-wrap items-center gap-4">
-                            <Link
-                                to="/hospitals"
-                                className="group px-7 py-3.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xl shadow-teal-600/25 transition-all duration-200 flex items-center gap-2.5 hover:scale-[1.02] active:scale-95"
-                            >
-                                <Search className="w-4 h-4 text-white" />
-                                <span>Find Hospitals & Live Queues</span>
-                                <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
-                            </Link>
+                            {/* Patient & non-logged-in: Show Find Hospitals + Book/Login */}
+                            {(!user || user.role === 'PATIENT') && (
+                                <>
+                                    <Link
+                                        to="/hospitals"
+                                        className="group px-7 py-3.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xl shadow-teal-600/25 transition-all duration-200 flex items-center gap-2.5 hover:scale-[1.02] active:scale-95"
+                                    >
+                                        <Search className="w-4 h-4 text-white" />
+                                        <span>Find Hospitals & Live Queues</span>
+                                        <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
+                                    </Link>
 
-                            <Link
-                                to="/login"
-                                className="px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-300/80 hover:border-teal-400 shadow-sm transition-all flex items-center gap-2"
-                            >
-                                <span>Access Portals</span>
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-bold border border-teal-200">
-                                    5 Roles
-                                </span>
-                            </Link>
+                                    {user ? (
+                                        <Link
+                                            to="/patient/book-appointment"
+                                            className="px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-300/80 hover:border-teal-400 shadow-sm transition-all flex items-center gap-2"
+                                        >
+                                            <Stethoscope className="w-4 h-4 text-teal-600" />
+                                            <span>Book OP Ticket</span>
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            to="/login"
+                                            className="px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-300/80 hover:border-teal-400 shadow-sm transition-all flex items-center gap-2"
+                                        >
+                                            <span>Access Portals</span>
+                                            <span className="text-xs px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-bold border border-teal-200">
+                                                5 Roles
+                                            </span>
+                                        </Link>
+                                    )}
+                                </>
+                            )}
+
+                            {/* Other logged-in roles: Show Go to Dashboard */}
+                            {user && user.role !== 'PATIENT' && (
+                                <Link
+                                    to={getRoleHomePath(user.role)}
+                                    className="group px-7 py-3.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-xl shadow-teal-600/25 transition-all duration-200 flex items-center gap-2.5 hover:scale-[1.02] active:scale-95"
+                                >
+                                    <ShieldCheck className="w-4 h-4 text-white" />
+                                    <span>Go to My Dashboard</span>
+                                    <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            )}
                         </div>
 
                         {/* Metrics Cards — Elevated Card Modern */}
