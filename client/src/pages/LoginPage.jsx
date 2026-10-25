@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useNavigate, Link, useLocation, Navigate } from 'react-router-dom';
+import { useAuth, getRoleHomePath } from '../context/AuthContext';
 import {
     HeartPulse,
     Lock,
@@ -22,9 +22,13 @@ const LoginPage = () => {
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
-    const { login } = useAuth();
+    const { login, user, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+
+    if (!loading && user) {
+        return <Navigate to={getRoleHomePath(user.role)} replace />;
+    }
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -32,14 +36,7 @@ const LoginPage = () => {
         setSubmitting(true);
         try {
             const data = await login(email, password);
-            switch (data.user.role) {
-                case 'MAIN_ADMIN': navigate('/admin/dashboard'); break;
-                case 'HOSPITAL_ADMIN': navigate('/hospital/dashboard'); break;
-                case 'FIXED_DOCTOR': navigate('/doctor/dashboard'); break;
-                case 'TEMPORARY_DOCTOR': navigate('/temp-doctor/dashboard'); break;
-                case 'PATIENT': navigate('/patient/dashboard'); break;
-                default: navigate('/');
-            }
+            navigate(getRoleHomePath(data.user.role));
         } catch (err) {
             setError(err.response?.data?.message || 'Invalid login credentials.');
         } finally {
@@ -63,7 +60,7 @@ const LoginPage = () => {
             <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-cyan-200/20 rounded-full blur-[120px] pointer-events-none"></div>
 
             <div className="relative z-10 sm:mx-auto sm:w-full sm:max-w-md text-center">
-                <Link to="/" className="inline-flex items-center gap-2 group mb-3">
+                <Link to={user ? getRoleHomePath(user.role) : "/"} className="inline-flex items-center gap-2 group mb-3">
                     <div className="w-12 h-12 bg-gradient-to-tr from-teal-600 to-cyan-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-teal-600/25 group-hover:scale-105 transition-transform duration-300">
                         <HeartPulse className="w-7 h-7 text-white animate-heartbeat" />
                     </div>

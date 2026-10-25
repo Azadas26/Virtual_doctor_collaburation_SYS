@@ -1,6 +1,6 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Navigate, Outlet, Link } from 'react-router-dom';
+import { useAuth, getRoleHomePath } from '../context/AuthContext';
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
     const { user, loading } = useAuth();
@@ -31,12 +31,12 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
                     <p className="text-slate-600 text-sm mb-6">
                         Your role (<span className="font-semibold text-teal-700">{user.role}</span>) does not have authorization to view this portal.
                     </p>
-                    <a
-                        href="/"
+                    <Link
+                        to={user ? getRoleHomePath(user.role) : "/"}
                         className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-medium px-5 py-2.5 rounded-xl transition"
                     >
-                        Return to Homepage
-                    </a>
+                        Return to Dashboard
+                    </Link>
                 </div>
             </div>
         );

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../services/api';
 import Sidebar from '../../components/Sidebar';
+import Role3DCanvas from '../../components/Role3DCanvas';
 import { useAuth } from '../../context/AuthContext';
 import { Stethoscope, Clock, Users, ArrowRight } from 'lucide-react';
 
@@ -31,42 +32,44 @@ const DoctorDashboardPage = () => {
             <Sidebar />
 
             <main className="flex-1 p-6 lg:p-10 max-w-7xl">
-                <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-teal-950 text-white p-8 rounded-3xl shadow-md mb-8">
-                    <div className="flex items-center gap-2 text-teal-300 font-bold text-xs uppercase tracking-wider mb-2">
-                        <Stethoscope className="w-4 h-4" /> Outpatient Consultation Suite
-                    </div>
-                    <h1 className="text-3xl font-extrabold tracking-tight">
-                        Dr. {user?.name || 'Doctor'}
-                    </h1>
-                    <p className="text-teal-100 text-sm mt-1">
-                        {hospital?.name || 'Government Hospital OPD'}
-                    </p>
-
-                    <div className="mt-6">
-                        <Link
-                            to="/doctor/queue"
-                            className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-6 py-3 rounded-2xl text-xs shadow-md shadow-teal-500/20 inline-flex items-center gap-2 transition"
-                        >
-                            Open Live OPD Patient Queue <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Live Queue Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                        <span className="text-xs font-bold text-slate-500 uppercase">Today Total OP Patients</span>
-                        <p className="text-3xl font-extrabold text-slate-900 mt-2">{queueSummary?.totalToday || 0}</p>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                        <span className="text-xs font-bold text-slate-500 uppercase">Waiting in Queue</span>
-                        <p className="text-3xl font-extrabold text-amber-700 mt-2">{queueSummary?.waitingCount || 0}</p>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                        <span className="text-xs font-bold text-slate-500 uppercase">Consultations Completed</span>
-                        <p className="text-3xl font-extrabold text-emerald-700 mt-2">{queueSummary?.completedCount || 0}</p>
+                {/* Hero Section with DNA Helix 3D Canvas */}
+                <div className="mb-8 rounded-3xl overflow-hidden bg-gradient-to-br from-teal-950 via-slate-900 to-teal-900 shadow-2xl shadow-teal-900/30">
+                    <div className="grid grid-cols-1 lg:grid-cols-2">
+                        <div className="p-8 lg:p-10 flex flex-col justify-center">
+                            <div className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4 w-fit">
+                                <Stethoscope className="w-3.5 h-3.5" />
+                                Outpatient Consultation Suite
+                            </div>
+                            <h1 className="text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+                                Dr. {user?.name || 'Doctor'}
+                            </h1>
+                            <p className="text-teal-200/70 text-sm mt-2">
+                                {hospital?.name || 'Government Hospital OPD'}
+                            </p>
+                            <div className="mt-6 grid grid-cols-3 gap-3">
+                                {[{ label: "Today's Patients", val: queueSummary?.totalToday || 0, color: 'text-white' },
+                                  { label: 'Waiting', val: queueSummary?.waitingCount || 0, color: 'text-amber-300' },
+                                  { label: 'Completed', val: queueSummary?.completedCount || 0, color: 'text-emerald-300' }
+                                ].map(({ label, val, color }) => (
+                                    <div key={label} className="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
+                                        <p className="text-[10px] font-bold text-teal-300 uppercase tracking-wider">{label}</p>
+                                        <p className={`text-2xl font-black mt-0.5 ${color}`}>{val}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-5">
+                                <Link to="/doctor/queue" className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md flex items-center gap-2 transition w-fit">
+                                    <Clock className="w-4 h-4" /> Open Live OPD Queue <ArrowRight className="w-4 h-4" />
+                                </Link>
+                            </div>
+                        </div>
+                        <div className="relative h-64 lg:h-auto min-h-[280px]">
+                            <Role3DCanvas role="FIXED_DOCTOR" className="absolute inset-0" />
+                            <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-teal-200 text-xs font-bold px-3 py-1.5 rounded-full">
+                                <span className="w-2 h-2 rounded-full bg-teal-400 animate-ping"></span>
+                                DNA Helix — OPD Active
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>

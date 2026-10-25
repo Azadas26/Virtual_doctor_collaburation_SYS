@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../services/api';
 import Sidebar from '../../components/Sidebar';
+import Role3DCanvas from '../../components/Role3DCanvas';
 import { useAuth } from '../../context/AuthContext';
 import { User, Ticket, Stethoscope, FileText, Search, Clock, Plus, ArrowRight } from 'lucide-react';
 
@@ -31,31 +32,36 @@ const PatientDashboardPage = () => {
             <Sidebar />
 
             <main className="flex-1 p-6 lg:p-10 max-w-7xl">
-                {/* Modern Light Welcome Banner */}
-                <div className="hero-banner-light p-8 mb-8 border border-teal-200/90 shadow-sm text-slate-900 relative overflow-hidden">
-                    <div className="flex items-center gap-2 text-teal-800 font-bold text-xs uppercase tracking-wider mb-2">
-                        <User className="w-4 h-4 text-teal-600" /> Patient Wellness Portal
-                    </div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-900">
-                        Welcome back, {user?.name || 'Patient'}!
-                    </h1>
-                    <p className="text-slate-600 text-sm mt-1 max-w-2xl leading-relaxed">
-                        Book OPD tickets online, avoid crowded hospital lines, and view digital prescriptions from government & voluntary doctors.
-                    </p>
-
-                    <div className="mt-6 flex flex-wrap items-center gap-3">
-                        <Link
-                            to="/patient/book-appointment"
-                            className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md shadow-teal-600/20 flex items-center gap-1.5 transition active:scale-95"
-                        >
-                            <Ticket className="w-4 h-4" /> Book OP Ticket Now
-                        </Link>
-                        <Link
-                            to="/hospitals"
-                            className="bg-white hover:bg-slate-50 text-slate-800 font-bold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5 border border-slate-200 shadow-xs"
-                        >
-                            <Search className="w-4 h-4 text-teal-600" /> Search Government Hospitals
-                        </Link>
+                {/* Hero Section with Heartbeat ECG 3D Canvas */}
+                <div className="mb-8 rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 shadow-2xl shadow-emerald-900/30">
+                    <div className="grid grid-cols-1 lg:grid-cols-2">
+                        <div className="p-8 lg:p-10 flex flex-col justify-center">
+                            <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4 w-fit">
+                                <User className="w-3.5 h-3.5" />
+                                Patient Wellness Portal
+                            </div>
+                            <h1 className="text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+                                Welcome back, <span className="text-emerald-300">{user?.name || 'Patient'}!</span>
+                            </h1>
+                            <p className="text-emerald-200/70 text-sm mt-2 leading-relaxed">
+                                Book OPD tickets online, avoid crowded hospital lines, and view digital prescriptions from government & voluntary doctors.
+                            </p>
+                            <div className="mt-6 flex flex-wrap gap-3">
+                                <Link to="/patient/book-appointment" className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md flex items-center gap-2 transition">
+                                    <Ticket className="w-4 h-4" /> Book OP Ticket Now
+                                </Link>
+                                <Link to="/hospitals" className="bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2">
+                                    <Search className="w-4 h-4" /> Search Hospitals
+                                </Link>
+                            </div>
+                        </div>
+                        <div className="relative h-64 lg:h-auto min-h-[280px]">
+                            <Role3DCanvas role="PATIENT" className="absolute inset-0" />
+                            <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-emerald-200 text-xs font-bold px-3 py-1.5 rounded-full">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                Heartbeat ECG Live
+                            </div>
+                        </div>
                     </div>
                 </div>
 

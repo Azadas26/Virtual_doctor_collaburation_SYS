@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth, getRoleHomePath } from '../context/AuthContext';
 import {
     HeartPulse,
     ShieldCheck,
@@ -25,6 +26,19 @@ import {
 import Medical3DCanvas from '../components/Medical3DCanvas';
 
 const LandingPage = () => {
+    const { user, loading } = useAuth();
+
+    const getRoleBannerStyle = (role) => {
+        switch (role) {
+            case 'MAIN_ADMIN': return { bg: 'bg-purple-600', text: 'Main Administrator', icon: '🛡️' };
+            case 'HOSPITAL_ADMIN': return { bg: 'bg-blue-600', text: 'Hospital Superintendent', icon: '🏥' };
+            case 'FIXED_DOCTOR': return { bg: 'bg-teal-600', text: 'Hospital Doctor', icon: '🩺' };
+            case 'TEMPORARY_DOCTOR': return { bg: 'bg-amber-600', text: 'Voluntary Doctor', icon: '⚕️' };
+            case 'PATIENT': return { bg: 'bg-emerald-600', text: 'Patient', icon: '👤' };
+            default: return { bg: 'bg-slate-600', text: 'User', icon: '👤' };
+        }
+    };
+
     const hospitalStats = [
         {
             name: 'Govt Medical College, Trivandrum',
@@ -57,6 +71,26 @@ const LandingPage = () => {
 
     return (
         <div className="min-h-screen bg-white text-slate-900 selection:bg-teal-500 selection:text-white">
+
+            {/* Logged-in user banner — shown only when authenticated */}
+            {!loading && user && (() => {
+                const bannerStyle = getRoleBannerStyle(user.role);
+                return (
+                    <div className={`${bannerStyle.bg} text-white px-4 py-3 flex items-center justify-between gap-4 flex-wrap`}>
+                        <div className="flex items-center gap-2 text-sm font-semibold">
+                            <span>{bannerStyle.icon}</span>
+                            <span>You're logged in as <strong>{user.name}</strong> — {bannerStyle.text}</span>
+                        </div>
+                        <Link
+                            to={getRoleHomePath(user.role)}
+                            className="bg-white/20 hover:bg-white/30 text-white font-bold text-xs px-4 py-1.5 rounded-full transition flex items-center gap-1.5 whitespace-nowrap"
+                        >
+                            Go to My Dashboard →
+                        </Link>
+                    </div>
+                );
+            })()}
+
             {/* Top Sub-Announcement Ribbon */}
             <div className="bg-gradient-to-r from-teal-50 via-white to-cyan-50 border-b border-teal-100/80 px-4 py-2.5 text-center text-xs text-teal-900 font-medium">
                 <span className="inline-flex items-center gap-2">

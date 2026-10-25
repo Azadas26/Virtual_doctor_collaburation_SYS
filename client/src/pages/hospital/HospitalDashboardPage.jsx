@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
 import Sidebar from '../../components/Sidebar';
+import Role3DCanvas from '../../components/Role3DCanvas';
 import { useAuth } from '../../context/AuthContext';
 import {
     Building2,
@@ -48,17 +49,37 @@ const HospitalDashboardPage = () => {
             <Sidebar />
 
             <main className="flex-1 p-6 lg:p-10 max-w-7xl">
-                {/* Header */}
-                <div className="mb-8 bg-gradient-to-r from-teal-800 to-slate-900 text-white p-8 rounded-3xl shadow-md">
-                    <div className="flex items-center gap-2 text-teal-300 font-bold text-xs uppercase tracking-wider mb-2">
-                        <Building2 className="w-4 h-4" /> Hospital Superintendent Control Panel
+                {/* Hero Section with 3D Canvas */}
+                <div className="mb-8 rounded-3xl overflow-hidden bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 shadow-2xl shadow-blue-900/30">
+                    <div className="grid grid-cols-1 lg:grid-cols-2">
+                        <div className="p-8 lg:p-10 flex flex-col justify-center">
+                            <div className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4 w-fit">
+                                <Building2 className="w-3.5 h-3.5" />
+                                Hospital Superintendent Control Panel
+                            </div>
+                            <h1 className="text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+                                {hospital ? hospital.name : 'Government Hospital Portal'}
+                            </h1>
+                            <p className="text-blue-200/70 text-sm mt-2 leading-relaxed">
+                                {hospital ? `${hospital.address}, ${hospital.district}, ${hospital.state}` : 'Manage capacity sharing, doctor rosters, and voluntary doctor contracts.'}
+                            </p>
+                            <div className="mt-5 flex flex-wrap gap-3">
+                                <Link to="/hospital/queue" className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md flex items-center gap-2 transition">
+                                    <Clock className="w-4 h-4" /> Open Live Patient Queue
+                                </Link>
+                                <Link to="/hospital/requirements" className="bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2">
+                                    <Briefcase className="w-4 h-4" /> Post Requirement
+                                </Link>
+                            </div>
+                        </div>
+                        <div className="relative h-64 lg:h-auto min-h-[280px]">
+                            <Role3DCanvas role="HOSPITAL_ADMIN" className="absolute inset-0" />
+                            <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-blue-200 text-xs font-bold px-3 py-1.5 rounded-full">
+                                <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+                                Capacity Orbit Live
+                            </div>
+                        </div>
                     </div>
-                    <h1 className="text-3xl font-extrabold tracking-tight">
-                        {hospital ? hospital.name : 'Government Hospital Portal'}
-                    </h1>
-                    <p className="text-teal-100 text-sm mt-1">
-                        {hospital ? `${hospital.address}, ${hospital.district}, ${hospital.state}` : 'Manage capacity sharing, doctor rosters, and voluntary doctor contracts.'}
-                    </p>
                 </div>
 
                 {/* Pending Approval Alert Banner */}
@@ -82,7 +103,21 @@ const HospitalDashboardPage = () => {
                 )}
 
                 {/* Action Shortcuts */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <Link
+                        to="/hospital/queue"
+                        className="bg-white p-5 rounded-2xl border border-teal-200/90 shadow-sm hover:border-teal-500 hover:shadow-md transition flex items-center justify-between group bg-gradient-to-r from-teal-50/50 to-white"
+                    >
+                        <div>
+                            <span className="text-[10px] font-black uppercase text-teal-700 bg-teal-100 px-2 py-0.5 rounded-md">Live OPD</span>
+                            <p className="font-bold text-slate-900 text-sm mt-1">Live Patient Queue</p>
+                            <p className="text-slate-500 text-xs mt-0.5">Monitor all doctor token queues</p>
+                        </div>
+                        <div className="w-10 h-10 bg-teal-600 text-white rounded-xl flex items-center justify-center group-hover:scale-110 transition shadow-md shadow-teal-600/20">
+                            <Clock className="w-5 h-5" />
+                        </div>
+                    </Link>
+
                     <Link
                         to="/hospital/requirements"
                         className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-teal-500 hover:shadow-md transition flex items-center justify-between group"

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, getRoleHomePath } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
-import { HeartPulse, LogOut, User as UserIcon, Shield, Building2, Stethoscope, UserCheck, Sparkles } from 'lucide-react';
+import { HeartPulse, LogOut, User as UserIcon, Shield, Building2, Stethoscope, UserCheck, Sparkles, Clock, ShieldCheck, LayoutDashboard, Search, PlusCircle } from 'lucide-react';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
@@ -45,22 +45,17 @@ const Navbar = () => {
         }
     };
 
-    const getDashboardPath = (role) => {
-        switch (role) {
-            case 'MAIN_ADMIN': return '/admin/dashboard';
-            case 'HOSPITAL_ADMIN': return '/hospital/dashboard';
-            case 'FIXED_DOCTOR': return '/doctor/dashboard';
-            case 'TEMPORARY_DOCTOR': return '/temp-doctor/dashboard';
-            case 'PATIENT': return '/patient/dashboard';
-            default: return '/';
-        }
-    };
+    const getDashboardPath = (role) => getRoleHomePath(role);
 
     return (
         <nav className="bg-white/95 backdrop-blur-xl border-b border-slate-200/90 sticky top-0 z-50 shadow-sm shadow-slate-900/5 text-slate-900 transition-all">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                {/* Brand Logo with 3D pulse */}
-                <Link to="/" className="flex items-center gap-3 group">
+                {/* Brand Logo with 3D pulse - routes to role home page if logged in */}
+                <Link
+                    to="/"
+                    className="flex items-center gap-3 group"
+                    title="e-Health Bridge Home"
+                >
                     <div className="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-600 to-cyan-500 text-white flex items-center justify-center shadow-md shadow-teal-600/25 group-hover:scale-105 transition-transform duration-300">
                         <HeartPulse className="w-5 h-5 animate-heartbeat text-white" />
                         <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse"></span>
@@ -75,21 +70,60 @@ const Navbar = () => {
                     </div>
                 </Link>
 
-                {/* Search / Nav Shortcuts */}
+                {/* Role-Specific Quick Nav Links */}
                 <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
-                    <Link
-                        to="/hospitals"
-                        className="hover:text-teal-600 transition-colors flex items-center gap-1.5"
-                    >
-                        <span>Find Hospitals</span>
-                    </Link>
-                    <Link
-                        to="/patient/book-appointment"
-                        className="hover:text-cyan-600 transition-colors flex items-center gap-1.5"
-                    >
-                        <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
-                        <span>Book Doctor</span>
-                    </Link>
+                    {!user && (
+                        <>
+                            <Link to="/hospitals" className="hover:text-teal-600 transition-colors flex items-center gap-1.5">
+                                <Search className="w-3.5 h-3.5" /><span>Find Hospitals</span>
+                            </Link>
+                            <Link to="/login" className="hover:text-cyan-600 transition-colors flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5 text-cyan-600" /><span>Book Doctor</span>
+                            </Link>
+                        </>
+                    )}
+                    {user?.role === 'PATIENT' && (
+                        <>
+                            <Link to="/hospitals" className="hover:text-teal-600 transition-colors flex items-center gap-1.5">
+                                <Search className="w-3.5 h-3.5" /><span>Find Hospitals</span>
+                            </Link>
+                            <Link to="/patient/book-appointment" className="hover:text-cyan-600 transition-colors flex items-center gap-1.5">
+                                <PlusCircle className="w-3.5 h-3.5 text-cyan-600" /><span>Book OP Ticket</span>
+                            </Link>
+                        </>
+                    )}
+                    {user?.role === 'MAIN_ADMIN' && (
+                        <>
+                            <Link to="/admin/hospitals" className="hover:text-blue-600 transition-colors flex items-center gap-1.5">
+                                <Building2 className="w-3.5 h-3.5" /><span>Hospitals</span>
+                            </Link>
+                            <Link to="/admin/users" className="hover:text-purple-600 transition-colors flex items-center gap-1.5">
+                                <ShieldCheck className="w-3.5 h-3.5 text-purple-600" /><span>Users</span>
+                            </Link>
+                        </>
+                    )}
+                    {user?.role === 'HOSPITAL_ADMIN' && (
+                        <>
+                            <Link to="/hospital/queue" className="hover:text-teal-600 transition-colors flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5" /><span>Live Queue</span>
+                            </Link>
+                            <Link to="/hospital/requirements" className="hover:text-amber-600 transition-colors flex items-center gap-1.5">
+                                <UserCheck className="w-3.5 h-3.5 text-amber-600" /><span>Requirements</span>
+                            </Link>
+                        </>
+                    )}
+                    {(user?.role === 'FIXED_DOCTOR' || user?.role === 'TEMPORARY_DOCTOR') && (
+                        <>
+                            <Link to={user.role === 'FIXED_DOCTOR' ? '/doctor/queue' : '/temp-doctor/schedule'} className="hover:text-teal-600 transition-colors flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5" /><span>Patient Queue</span>
+                            </Link>
+                            {user.role === 'TEMPORARY_DOCTOR' && (
+                                <Link to="/temp-doctor/hospitals" className="hover:text-amber-600 transition-colors flex items-center gap-1.5">
+                                    <Building2 className="w-3.5 h-3.5 text-amber-600" /><span>Hospitals</span>
+                                </Link>
+                            )}
+                        </>
+                    )}
                 </div>
 
                 {/* User Right Nav */}

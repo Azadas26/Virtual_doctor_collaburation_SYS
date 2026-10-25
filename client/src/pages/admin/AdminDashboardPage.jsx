@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
 import Sidebar from '../../components/Sidebar';
+import Role3DCanvas from '../../components/Role3DCanvas';
+import { useAuth } from '../../context/AuthContext';
 import {
     Building2,
     Users,
@@ -9,7 +11,6 @@ import {
     ShieldCheck,
     Activity,
     UserCheck,
-    TrendingUp,
     AlertTriangle
 } from 'lucide-react';
 
@@ -34,13 +35,15 @@ const AdminDashboardPage = () => {
         fetchDashboard();
     }, []);
 
+    const { user } = useAuth();
+
     if (loading) {
         return (
             <div className="flex bg-slate-50 min-h-screen">
                 <Sidebar />
                 <div className="flex-1 p-8 text-center py-20">
-                    <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                    <p className="text-slate-500 text-sm font-medium">Loading Main Admin Platform Metrics...</p>
+                    <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p className="text-slate-500 text-sm font-medium">Loading Admin Platform...</p>
                 </div>
             </div>
         );
@@ -51,18 +54,46 @@ const AdminDashboardPage = () => {
     return (
         <div className="flex bg-slate-50 min-h-[calc(100vh-4rem)]">
             <Sidebar />
-
             <main className="flex-1 p-6 lg:p-10 max-w-7xl">
-                <div className="mb-8">
-                    <div className="inline-flex items-center gap-1.5 bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full mb-2">
-                        <ShieldCheck className="w-3.5 h-3.5" /> State Health Directorate Command Center
+
+                {/* Hero Section with 3D Canvas */}
+                <div className="mb-8 rounded-3xl overflow-hidden bg-gradient-to-br from-purple-950 via-slate-900 to-purple-900 shadow-2xl shadow-purple-900/30 relative">
+                    <div className="grid grid-cols-1 lg:grid-cols-2">
+                        {/* Left: Welcome Content */}
+                        <div className="p-8 lg:p-10 flex flex-col justify-center">
+                            <div className="inline-flex items-center gap-2 bg-purple-500/20 border border-purple-400/30 text-purple-300 text-xs font-bold px-3 py-1.5 rounded-full mb-4 w-fit">
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                State Health Directorate Command Center
+                            </div>
+                            <h1 className="text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+                                Welcome, <span className="text-purple-300">{user?.name || 'Admin'}</span>
+                            </h1>
+                            <p className="text-purple-200/70 text-sm mt-2 leading-relaxed">
+                                Global capacity oversight, hospital verifications, voluntary doctor service contracts, and system audit trails.
+                            </p>
+                            <div className="mt-6 grid grid-cols-2 gap-3">
+                                {[{ label: 'Total Hospitals', val: stats?.totalHospitals || 0, sub: `${stats?.activeHospitals || 0} approved` },
+                                  { label: 'Active Contracts', val: stats?.activeContracts || 0, sub: 'Temp doctor terms' },
+                                  { label: "Today's Appointments", val: stats?.todayAppointments || 0, sub: 'Scheduled today' },
+                                  { label: 'Verified Doctors', val: stats?.verifiedTempDoctorsCount || 0, sub: `of ${stats?.tempDoctorsCount || 0} registered` }
+                                ].map(({ label, val, sub }) => (
+                                    <div key={label} className="bg-white/5 border border-white/10 rounded-2xl p-3">
+                                        <p className="text-[10px] font-bold text-purple-300 uppercase tracking-wider">{label}</p>
+                                        <p className="text-2xl font-black text-white mt-0.5">{val}</p>
+                                        <p className="text-[11px] text-purple-200/60 mt-0.5">{sub}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        {/* Right: 3D Canvas */}
+                        <div className="relative h-64 lg:h-auto min-h-[280px]">
+                            <Role3DCanvas role="MAIN_ADMIN" className="absolute inset-0" />
+                            <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-purple-200 text-xs font-bold px-3 py-1.5 rounded-full">
+                                <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+                                Governance Shield Active
+                            </div>
+                        </div>
                     </div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                        Main Administrator Dashboard
-                    </h1>
-                    <p className="text-slate-600 text-sm mt-1">
-                        Global capacity oversight, hospital verifications, voluntary doctor service contracts, and system audit trails.
-                    </p>
                 </div>
 
                 {/* Metric Cards Grid */}

@@ -3,6 +3,17 @@ import API from '../services/api';
 
 const AuthContext = createContext();
 
+export const getRoleHomePath = (role) => {
+    switch (role) {
+        case 'MAIN_ADMIN': return '/admin/dashboard';
+        case 'HOSPITAL_ADMIN': return '/hospital/dashboard';
+        case 'FIXED_DOCTOR': return '/doctor/dashboard';
+        case 'TEMPORARY_DOCTOR': return '/temp-doctor/dashboard';
+        case 'PATIENT': return '/patient/dashboard';
+        default: return '/';
+    }
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('ehb_user');

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -41,6 +41,15 @@ import BookAppointmentPage from './pages/patient/BookAppointmentPage';
 import PatientAppointmentsPage from './pages/patient/PatientAppointmentsPage';
 import PatientMedicalHistoryPage from './pages/patient/PatientMedicalHistoryPage';
 import PatientProfilePage from './pages/patient/PatientProfilePage';
+
+import { useAuth, getRoleHomePath } from './context/AuthContext';
+
+// Redirects any unmatched route to the user's role home, or to /login if not authenticated
+const RoleRedirect = () => {
+    const { user, loading } = useAuth();
+    if (loading) return null;
+    return <Navigate to={user ? getRoleHomePath(user.role) : '/login'} replace />;
+};
 
 function App() {
     return (
@@ -249,6 +258,9 @@ function App() {
                                     </ProtectedRoute>
                                 }
                             />
+
+                            {/* Catch-all: redirect to role home or login */}
+                            <Route path="*" element={<RoleRedirect />} />
                         </Routes>
                     </div>
                 </div>
