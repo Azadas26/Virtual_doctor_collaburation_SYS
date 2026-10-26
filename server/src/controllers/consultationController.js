@@ -285,7 +285,14 @@ exports.completeConsultation = async (req, res) => {
             hospitalId: appointment.hospitalId,
             clinicalNotes,
             observations: observations || '',
-            medications: Array.isArray(medications) ? medications : [],
+            medications: Array.isArray(medications)
+                ? medications.map(m => ({
+                    name: m.name,
+                    dosage: m.dosage || 'As directed',
+                    frequency: m.frequency || '1-0-1 after food',
+                    duration: m.duration || 'As directed'
+                }))
+                : [],
             investigations: Array.isArray(investigations) ? investigations : [],
             followUpDate: followUpDate ? new Date(followUpDate) : null,
             referralInfo: referralInfo || '',

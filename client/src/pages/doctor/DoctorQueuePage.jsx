@@ -40,7 +40,7 @@ const DoctorQueuePage = () => {
     const [showConsultModal, setShowConsultModal] = useState(false);
     const [clinicalNotes, setClinicalNotes] = useState('');
     const [observations, setObservations] = useState('');
-    const [medications, setMedications] = useState([{ name: '', dosage: '', duration: '5 days' }]);
+    const [medications, setMedications] = useState([{ name: '', dosage: '', frequency: '1-0-1 after food', duration: '5 days' }]);
     const [investigations, setInvestigations] = useState(['']);
     const [submitting, setSubmitting] = useState(false);
 
@@ -114,7 +114,7 @@ const DoctorQueuePage = () => {
     };
 
     const handleAddMedicationRow = () => {
-        setMedications([...medications, { name: '', dosage: '', duration: '5 days' }]);
+        setMedications([...medications, { name: '', dosage: '', frequency: '1-0-1 after food', duration: '5 days' }]);
     };
 
     const handleRemoveMedicationRow = (idx) => {
@@ -144,7 +144,7 @@ const DoctorQueuePage = () => {
                 setShowConsultModal(false);
                 setClinicalNotes('');
                 setObservations('');
-                setMedications([{ name: '', dosage: '', duration: '5 days' }]);
+                setMedications([{ name: '', dosage: '', frequency: '1-0-1 after food', duration: '5 days' }]);
                 fetchQueue();
             }
         } catch (error) {
@@ -726,9 +726,16 @@ const DoctorQueuePage = () => {
                                                 />
                                                 <input
                                                     type="text"
-                                                    placeholder="Dosage (e.g. 500mg 1-0-1)"
+                                                    placeholder="Dosage (e.g. 500mg)"
                                                     value={med.dosage}
                                                     onChange={(e) => handleMedChange(idx, 'dosage', e.target.value)}
+                                                    className="w-28 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Frequency (e.g. 1-0-1)"
+                                                    value={med.frequency}
+                                                    onChange={(e) => handleMedChange(idx, 'frequency', e.target.value)}
                                                     className="w-32 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
                                                 />
                                                 <input

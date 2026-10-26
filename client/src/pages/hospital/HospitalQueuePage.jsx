@@ -39,7 +39,7 @@ const HospitalQueuePage = () => {
     const [showConsultModal, setShowConsultModal] = useState(false);
     const [clinicalNotes, setClinicalNotes] = useState('');
     const [observations, setObservations] = useState('');
-    const [medications, setMedications] = useState([{ name: '', dosage: '', duration: '5 days' }]);
+    const [medications, setMedications] = useState([{ name: '', dosage: '', frequency: '1-0-1 after food', duration: '5 days' }]);
     const [investigations, setInvestigations] = useState(['']);
     const [submittingConsult, setSubmittingConsult] = useState(false);
 
@@ -139,7 +139,7 @@ const HospitalQueuePage = () => {
                 setShowConsultModal(false);
                 setClinicalNotes('');
                 setObservations('');
-                setMedications([{ name: '', dosage: '', duration: '5 days' }]);
+                setMedications([{ name: '', dosage: '', frequency: '1-0-1 after food', duration: '5 days' }]);
                 setInvestigations(['']);
                 fetchQueue(selectedDoctorId, true);
             }

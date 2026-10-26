@@ -128,7 +128,7 @@ exports.register = async (req, res) => {
                 dateOfBirth: dateOfBirth || new Date('1990-01-01'),
                 gender: gender || 'Male',
                 contact: contactNumber || '',
-                address: address || '',
+                address: address || 'Not provided',
                 emergencyContact: { name: '', relation: '', phone: '' }
             });
             await patient.save();
