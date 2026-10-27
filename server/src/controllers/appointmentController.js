@@ -327,8 +327,9 @@ exports.getMyAppointments = async (req, res) => {
         if (!patient) return res.json({ success: true, count: 0, appointments: [] });
 
         const appointments = await Appointment.find({ patientId: patient._id })
-            .populate('hospitalId', 'name address district state')
-            .populate('doctorId', 'doctorName specialization doctorType workingHours')
+            .populate('hospitalId', 'name address district state contactNumber')
+            .populate('doctorId', 'doctorName specialization doctorType workingHours qualification registrationNumber')
+            .populate('patientId', 'name dateOfBirth gender contact address bloodGroup emergencyContact')
             .sort({ createdAt: -1 });
 
         return res.json({

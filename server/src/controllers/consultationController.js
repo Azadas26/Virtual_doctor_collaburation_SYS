@@ -379,8 +379,10 @@ exports.getMyConsultations = async (req, res) => {
         }
 
         const consultations = await Consultation.find({ patientId: patient._id })
-            .populate('doctorId', 'doctorName specialization doctorType')
-            .populate('hospitalId', 'name district state')
+            .populate('doctorId', 'doctorName specialization doctorType qualification registrationNumber department')
+            .populate('hospitalId', 'name district state address contactNumber')
+            .populate('patientId', 'name dateOfBirth gender contact address bloodGroup allergies existingConditions')
+            .populate('appointmentId', 'appointmentNumber appointmentDate queuePosition priorityCategory timeSlot symptoms')
             .sort({ createdAt: -1 });
 
         return res.json({

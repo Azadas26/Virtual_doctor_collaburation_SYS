@@ -16,7 +16,10 @@ import {
     Users,
     ChevronRight,
     Check,
-    Info
+    Info,
+    Printer,
+    Download,
+    Ticket
 } from 'lucide-react';
 
 // Helper: YYYY-MM-DD in local timezone
@@ -248,7 +251,14 @@ const BookAppointmentPage = () => {
                             </div>
                         </div>
 
-                        <div className="flex gap-4 pt-4 border-t border-slate-100">
+                        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
+                            <button
+                                type="button"
+                                onClick={() => window.print()}
+                                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3.5 px-6 rounded-2xl text-xs transition flex items-center justify-center gap-2"
+                            >
+                                <Download className="w-4 h-4" /> Download / Print OP Ticket
+                            </button>
                             <button
                                 onClick={() => navigate('/patient/appointments')}
                                 className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-2xl text-xs shadow-md shadow-teal-600/20 transition flex items-center justify-center gap-2 active:scale-95"
