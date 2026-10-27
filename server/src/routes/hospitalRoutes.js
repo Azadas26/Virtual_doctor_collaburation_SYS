@@ -7,12 +7,12 @@ const {
     updateHospital,
     getHospitalDoctors
 } = require('../controllers/hospitalController');
-const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize, checkHospitalApproved } = require('../middleware/auth');
 
 router.get('/', getHospitals);
 router.get('/:id', getHospitalById);
 router.get('/:id/doctors', getHospitalDoctors);
 router.post('/', protect, authorize('MAIN_ADMIN'), createHospital);
-router.put('/:id', protect, authorize('MAIN_ADMIN', 'HOSPITAL_ADMIN'), updateHospital);
+router.put('/:id', protect, authorize('MAIN_ADMIN', 'HOSPITAL_ADMIN'), checkHospitalApproved, updateHospital);
 
 module.exports = router;

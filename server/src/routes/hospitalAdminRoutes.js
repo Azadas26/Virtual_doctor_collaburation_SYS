@@ -7,10 +7,11 @@ const {
     verifyDoctorProfile,
     getHospitalRequests
 } = require('../controllers/hospitalAdminController');
-const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize, checkHospitalApproved } = require('../middleware/auth');
 
 router.use(protect);
 router.use(authorize('HOSPITAL_ADMIN', 'MAIN_ADMIN'));
+router.use(checkHospitalApproved);
 
 router.get('/dashboard', getDashboardStats);
 router.get('/doctors', getHospitalDoctors);

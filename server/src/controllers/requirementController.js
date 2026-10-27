@@ -33,6 +33,17 @@ exports.createRequirement = async (req, res) => {
             });
         }
 
+        // Validate that requiredDate is in the future (tomorrow or later)
+        const reqDate = new Date(requiredDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // normalize to start of day
+        if (reqDate <= today) {
+            return res.status(400).json({
+                success: false,
+                message: 'Required date must be a future date (tomorrow or later). Past dates and today are not allowed.'
+            });
+        }
+
         const requirement = new HospitalDoctorRequirement({
             hospitalId: hospital._id,
             department,
@@ -105,3 +116,33 @@ exports.getRequirements = async (req, res) => {
         });
     }
 };
+
+// @desc Get ALL requirements for THIS hospital admin's own hospital (all statuses)
+// @route GET /api/requirements/my
+// @access Private (HOSPITAL_ADMIN)
+exports.getMyRequirements = async (req, res) => {
+    try {
+        const hospital = await Hospital.findOne({ adminUserId: req.user._id });
+        if (!hospital) {
+            return res.status(403).json({
+                success: false,
+                message: 'No hospital found associated with your admin account.'
+            });
+        }
+
+        const requirements = await HospitalDoctorRequirement.find({ hospitalId: hospital._id })
+            .sort({ createdAt: -1 });
+
+        return res.json({
+            success: true,
+            count: requirements.length,
+            requirements
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching your hospital requirements: ' + error.message
+        });
+    }
+};
+

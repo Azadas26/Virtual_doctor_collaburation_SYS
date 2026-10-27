@@ -1,6 +1,7 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import API from '../services/api';
 import {
     LayoutDashboard,
     Building2,
@@ -19,11 +20,35 @@ import {
     Activity,
     Shield,
     HeartPulse,
-    Sparkles
+    Sparkles,
+    Lock,
+    AlertTriangle
 } from 'lucide-react';
 
 const Sidebar = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
+
+    // Track whether temp doctor has uploaded verification documents
+    const [tempDocHasDocs, setTempDocHasDocs] = useState(true); // true by default to avoid flash
+    const [docCheckDone, setDocCheckDone] = useState(false);
+
+    useEffect(() => {
+        if (user?.role === 'TEMPORARY_DOCTOR') {
+            API.get('/temporary-doctors/profile')
+                .then(res => {
+                    if (res.data.success) {
+                        const docs = res.data.profile?.verificationDocuments || [];
+                        setTempDocHasDocs(docs.length > 0);
+                    }
+                })
+                .catch(() => setTempDocHasDocs(false))
+                .finally(() => setDocCheckDone(true));
+        } else {
+            setDocCheckDone(true);
+        }
+    }, [user]);
+
     if (!user) return null;
 
     const getRoleDetails = (role) => {
@@ -75,6 +100,7 @@ const Sidebar = () => {
 
     const roleInfo = getRoleDetails(user.role);
 
+    // Standard nav item
     const navItem = (to, icon, label, badge = null) => {
         const IconComponent = icon;
         return (
@@ -117,6 +143,30 @@ const Sidebar = () => {
                     </>
                 )}
             </NavLink>
+        );
+    };
+
+    // Locked nav item — redirects to profile page on click
+    const lockedNavItem = (icon, label) => {
+        const IconComponent = icon;
+        return (
+            <button
+                type="button"
+                onClick={() => {
+                    alert('Please upload your verification documents (MCI Certificate / Degree) on the Profile page before accessing this section.');
+                    navigate('/temp-doctor/profile');
+                }}
+                title="Upload credentials first to unlock"
+                className="group w-full flex items-center justify-between px-3 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 text-slate-400 hover:bg-red-50/50 cursor-not-allowed opacity-60"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-400">
+                        <IconComponent className="w-4 h-4" />
+                    </div>
+                    <span className="truncate">{label}</span>
+                </div>
+                <Lock className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+            </button>
         );
     };
 
@@ -190,17 +240,34 @@ const Sidebar = () => {
                     </div>
                 );
 
-            case 'TEMPORARY_DOCTOR':
+            case 'TEMPORARY_DOCTOR': {
+                const docsLocked = docCheckDone && !tempDocHasDocs;
                 return (
                     <div className="space-y-4">
+                        {/* Warning banner when documents not uploaded */}
+                        {docsLocked && (
+                            <div className="mx-1 flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+                                <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+                                <p className="text-[11px] text-red-700 font-semibold leading-snug">
+                                    Upload your credentials first to unlock all features.
+                                </p>
+                            </div>
+                        )}
+
                         <div>
                             <span className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
                                 Voluntary Console
                             </span>
                             <div className="space-y-1">
-                                {navItem('/temp-doctor/dashboard', LayoutDashboard, 'Voluntary Portal')}
-                                {navItem('/temp-doctor/schedule', Clock, 'My Shift & Queue', 'OPD')}
-                                {navItem('/temp-doctor/hospitals', Building2, 'Available Requirements')}
+                                {docsLocked
+                                    ? lockedNavItem(LayoutDashboard, 'Voluntary Portal')
+                                    : navItem('/temp-doctor/dashboard', LayoutDashboard, 'Voluntary Portal')}
+                                {docsLocked
+                                    ? lockedNavItem(Clock, 'My Shift & Queue')
+                                    : navItem('/temp-doctor/schedule', Clock, 'My Shift & Queue', 'OPD')}
+                                {docsLocked
+                                    ? lockedNavItem(Building2, 'Available Requirements')
+                                    : navItem('/temp-doctor/hospitals', Building2, 'Available Requirements')}
                             </div>
                         </div>
 
@@ -209,12 +276,17 @@ const Sidebar = () => {
                                 Credentials & Legal
                             </span>
                             <div className="space-y-1">
-                                {navItem('/temp-doctor/contracts', FileCheck, 'Signed Contracts')}
-                                {navItem('/temp-doctor/profile', UserCheck, 'Doctor Profile & KMC')}
+                                {docsLocked
+                                    ? lockedNavItem(FileCheck, 'Signed Contracts')
+                                    : navItem('/temp-doctor/contracts', FileCheck, 'Signed Contracts')}
+                                {/* Profile page is always accessible — this is where they upload docs */}
+                                {navItem('/temp-doctor/profile', UserCheck, 'Doctor Profile & KMC',
+                                    docsLocked ? '⚠ Required' : null)}
                             </div>
                         </div>
                     </div>
                 );
+            }
 
             case 'PATIENT':
                 return (

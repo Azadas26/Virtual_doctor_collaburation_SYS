@@ -170,9 +170,12 @@ exports.register = async (req, res) => {
 
         const token = generateToken(user._id);
 
+        // Return hospital approval status so the frontend can gate access immediately
+        const hospitalStatus = hospitalObj ? hospitalObj.status : null;
+
         return res.status(201).json({
             success: true,
-            message: 'Registration successful!',
+            message: 'Registration successful!' + (hospitalStatus === 'PENDING' ? ' Your hospital registration is pending admin approval.' : ''),
             token,
             user: {
                 id: user._id,
@@ -180,7 +183,8 @@ exports.register = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 hospitalId: user.hospitalId
-            }
+            },
+            hospitalStatus
         });
 
     } catch (error) {
@@ -241,6 +245,13 @@ exports.login = async (req, res) => {
             resourceId: user._id
         });
 
+        // For HOSPITAL_ADMIN, fetch hospital status so frontend can gate portal access
+        let hospitalStatus = null;
+        if (user.role === 'HOSPITAL_ADMIN') {
+            const hosp = await Hospital.findOne({ adminUserId: user._id }).select('status');
+            hospitalStatus = hosp ? hosp.status : null;
+        }
+
         return res.json({
             success: true,
             token,
@@ -250,7 +261,8 @@ exports.login = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 hospitalId: user.hospitalId
-            }
+            },
+            hospitalStatus
         });
 
     } catch (error) {
@@ -285,7 +297,8 @@ exports.getMe = async (req, res) => {
             success: true,
             user,
             profile,
-            hospital
+            hospital,
+            hospitalStatus: hospital ? hospital.status : null
         });
     } catch (error) {
         return res.status(500).json({

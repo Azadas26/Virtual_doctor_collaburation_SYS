@@ -3,6 +3,25 @@ import API from '../../services/api';
 import Sidebar from '../../components/Sidebar';
 import { Briefcase, Plus, Calendar, Clock, Users } from 'lucide-react';
 
+// Helper: returns today's date as YYYY-MM-DD (local timezone)
+const getTodayString = () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
+// Helper: tomorrow's date as YYYY-MM-DD
+const getTomorrowString = () => {
+    const now = new Date();
+    now.setDate(now.getDate() + 1);
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
 const HospitalRequirementsPage = () => {
     const [requirements, setRequirements] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,9 +36,12 @@ const HospitalRequirementsPage = () => {
     const [reason, setReason] = useState('Peak Monday OPD crowding');
     const [submitting, setSubmitting] = useState(false);
 
+    const todayStr = getTodayString();
+    const tomorrowStr = getTomorrowString();
+
     const fetchRequirements = async () => {
         try {
-            const res = await API.get('/requirements');
+            const res = await API.get('/requirements/my');
             if (res.data.success) {
                 setRequirements(res.data.requirements);
             }
@@ -145,14 +167,20 @@ const HospitalRequirementsPage = () => {
 
                                 <div className="grid grid-cols-3 gap-3">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Date</label>
+                                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                            Date
+                                            <span className="text-red-500 ml-1">*</span>
+                                        </label>
                                         <input
                                             type="date"
                                             required
+                                            min={tomorrowStr}
                                             value={requiredDate}
                                             onChange={(e) => setRequiredDate(e.target.value)}
                                             className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                                            title="Must be a future date (tomorrow or later)"
                                         />
+                                        <p className="text-[10px] text-slate-400 mt-0.5">Must be tomorrow or a future date</p>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Start Time</label>

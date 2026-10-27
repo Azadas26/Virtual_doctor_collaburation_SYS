@@ -137,6 +137,18 @@ exports.bookAppointment = async (req, res) => {
         const bookingDate = appointmentDate ? new Date(appointmentDate) : new Date();
         const dateStr = bookingDate.toISOString().split('T')[0];
 
+        // Validate: appointment date must not be in the past
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const bookingDay = new Date(bookingDate);
+        bookingDay.setHours(0, 0, 0, 0);
+        if (bookingDay < today) {
+            return res.status(400).json({
+                success: false,
+                message: 'Appointment date cannot be in the past. Please select today or a future date.'
+            });
+        }
+
         const chosenDoctorId = preferredDoctorId || req.body.doctorId;
 
         // Candidate Doctors selection (matching either department or specialization)
@@ -148,6 +160,33 @@ exports.bookAppointment = async (req, res) => {
             ],
             status: 'ACTIVE'
         });
+
+        // If a specific temp doctor was chosen, validate appointment date is in their window
+        if (chosenDoctorId) {
+            const chosenDoc = await Doctor.findById(chosenDoctorId);
+            if (chosenDoc && chosenDoc.doctorType === 'TEMPORARY') {
+                if (chosenDoc.startDate) {
+                    const docStart = new Date(chosenDoc.startDate);
+                    docStart.setHours(0, 0, 0, 0);
+                    if (bookingDay < docStart) {
+                        return res.status(400).json({
+                            success: false,
+                            message: `This voluntary doctor is not available before ${chosenDoc.startDate.toDateString()}. Please select a date within their availability window.`
+                        });
+                    }
+                }
+                if (chosenDoc.endDate) {
+                    const docEnd = new Date(chosenDoc.endDate);
+                    docEnd.setHours(23, 59, 59, 999);
+                    if (bookingDate > docEnd) {
+                        return res.status(400).json({
+                            success: false,
+                            message: `This voluntary doctor is not available after ${chosenDoc.endDate.toDateString()}. Please select a date within their availability window.`
+                        });
+                    }
+                }
+            }
+        }
 
         let selectedDoctor = null;
         let allocationReason = [];

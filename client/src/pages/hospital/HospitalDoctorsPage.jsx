@@ -39,10 +39,10 @@ const HospitalDoctorsPage = () => {
         setSubmitting(true);
         try {
             const res = await API.post('/hospital-admin/doctors', {
-                name,
+                doctorName: name,
                 email,
                 password,
-                contactNumber,
+                contactInfo: contactNumber,
                 department,
                 specialization,
                 registrationNumber

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Hospital = require('../models/Hospital');
 
 const protect = async (req, res, next) => {
     let token;
@@ -70,4 +71,60 @@ const authorize = (...roles) => {
     };
 };
 
-module.exports = { protect, authorize };
+/**
+ * Middleware: checkHospitalApproved
+ * Must be used AFTER `protect`. Blocks HOSPITAL_ADMIN users whose
+ * associated hospital has not yet been approved by the Main Admin.
+ * Other roles pass through without any check.
+ */
+const checkHospitalApproved = async (req, res, next) => {
+    if (!req.user || req.user.role !== 'HOSPITAL_ADMIN') {
+        return next(); // not a sub-admin, skip
+    }
+
+    try {
+        const hospital = await Hospital.findOne({ adminUserId: req.user._id }).select('status name');
+
+        if (!hospital) {
+            return res.status(403).json({
+                success: false,
+                message: 'No hospital record is linked to your account. Please contact the Main Administrator.'
+            });
+        }
+
+        if (hospital.status === 'PENDING') {
+            return res.status(403).json({
+                success: false,
+                hospitalStatus: 'PENDING',
+                message: `Your hospital registration ("${hospital.name}") is pending approval by the Main Administrator. You cannot perform any actions until it is approved.`
+            });
+        }
+
+        if (hospital.status === 'REJECTED') {
+            return res.status(403).json({
+                success: false,
+                hospitalStatus: 'REJECTED',
+                message: `Your hospital registration ("${hospital.name}") has been rejected by the Main Administrator. Please contact support.`
+            });
+        }
+
+        if (hospital.status === 'DEACTIVATED') {
+            return res.status(403).json({
+                success: false,
+                hospitalStatus: 'DEACTIVATED',
+                message: `Your hospital ("${hospital.name}") has been deactivated. Please contact the Main Administrator.`
+            });
+        }
+
+        // hospital.status === 'APPROVED'
+        req.hospital = hospital;
+        next();
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: 'Error verifying hospital approval status: ' + err.message
+        });
+    }
+};
+
+module.exports = { protect, authorize, checkHospitalApproved };

@@ -15,8 +15,19 @@ import {
     Calendar,
     Users,
     ChevronRight,
-    Check
+    Check,
+    Info
 } from 'lucide-react';
+
+// Helper: YYYY-MM-DD in local timezone
+const toLocalDateStr = (date) => {
+    const d = new Date(date);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+};
+const todayStr = toLocalDateStr(new Date());
 
 const BookAppointmentPage = () => {
     const [searchParams] = useSearchParams();
@@ -41,6 +52,9 @@ const BookAppointmentPage = () => {
     const [evaluating, setEvaluating] = useState(false);
     const [booking, setBooking] = useState(false);
     const [bookedAppointment, setBookedAppointment] = useState(null);
+
+    // Appointment date state
+    const [appointmentDate, setAppointmentDate] = useState(todayStr);
 
     const navigate = useNavigate();
 
@@ -96,6 +110,9 @@ const BookAppointmentPage = () => {
     const handleDoctorSelect = (docId) => {
         setSelectedDoctorId(docId);
         setDoctorSelectionMode(docId ? 'SPECIFIC' : 'AUTO');
+        // Reset appointment date when switching doctor
+        setAppointmentDate(todayStr);
+        setTriagePreviewData(null);
     };
 
     const handleEvaluateTriage = async (e) => {
@@ -106,7 +123,8 @@ const BookAppointmentPage = () => {
             const res = await API.post('/appointments/triage-preview', {
                 hospitalId: selectedHospitalId,
                 department,
-                symptoms
+                symptoms,
+                appointmentDate
             });
             if (res.data.success) {
                 setTriagePreviewData(res.data);
@@ -126,6 +144,7 @@ const BookAppointmentPage = () => {
                 department,
                 symptoms,
                 symptomDuration,
+                appointmentDate,
                 preferredDoctorId: selectedDoctorId || undefined,
                 doctorId: selectedDoctorId || undefined
             });
@@ -140,6 +159,26 @@ const BookAppointmentPage = () => {
     };
 
     const selectedDoctorObj = doctors.find(d => d._id === selectedDoctorId);
+
+    // Compute date constraints based on selected doctor type
+    const getDateConstraints = () => {
+        if (!selectedDoctorObj) {
+            // Auto-assign or no doctor: today onwards
+            return { min: todayStr, max: undefined, isTempRestricted: false };
+        }
+        if (selectedDoctorObj.doctorType === 'TEMPORARY') {
+            const minDate = selectedDoctorObj.startDate
+                ? toLocalDateStr(selectedDoctorObj.startDate)
+                : todayStr;
+            const maxDate = selectedDoctorObj.endDate
+                ? toLocalDateStr(selectedDoctorObj.endDate)
+                : undefined;
+            return { min: minDate, max: maxDate, isTempRestricted: true };
+        }
+        // Fixed doctor: today onwards
+        return { min: todayStr, max: undefined, isTempRestricted: false };
+    };
+    const dateConstraints = getDateConstraints();
 
     return (
         <div className="flex bg-slate-50 min-h-[calc(100vh-4rem)]">
@@ -420,6 +459,60 @@ const BookAppointmentPage = () => {
                                 )}
                             </div>
 
+                            {/* Appointment Date Picker */}
+                            <div className="space-y-3 pt-2 border-t border-slate-100">
+                                <div>
+                                    <label className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                                        <Calendar className="w-4 h-4 text-teal-600" />
+                                        Appointment Date
+                                    </label>
+
+                                    {/* Temp doctor date restriction info banner */}
+                                    {dateConstraints.isTempRestricted && (
+                                        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5 mb-2">
+                                            <Info className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                                            <p className="text-[11px] text-amber-800 font-medium">
+                                                Dr. <span className="font-bold">{selectedDoctorObj?.doctorName}</span> is a Voluntary Specialist available only from{' '}
+                                                <span className="font-bold">
+                                                    {dateConstraints.min ? new Date(dateConstraints.min).toLocaleDateString() : 'today'}
+                                                </span>
+                                                {dateConstraints.max && (
+                                                    <> to <span className="font-bold">{new Date(dateConstraints.max).toLocaleDateString()}</span></>
+                                                )}.
+                                                Please select a date within this window.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="date"
+                                            required
+                                            min={dateConstraints.min}
+                                            max={dateConstraints.max}
+                                            value={appointmentDate}
+                                            onChange={(e) => {
+                                                setAppointmentDate(e.target.value);
+                                                setTriagePreviewData(null); // reset preview on date change
+                                            }}
+                                            className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
+                                            title={dateConstraints.isTempRestricted
+                                                ? `Available: ${dateConstraints.min} to ${dateConstraints.max || 'open'}`
+                                                : 'Select appointment date (today or later)'}
+                                        />
+                                        <div className="text-xs text-slate-500">
+                                            {dateConstraints.isTempRestricted ? (
+                                                <span className="text-amber-700 font-semibold">
+                                                    ⚠ Restricted to doctor's availability window
+                                                </span>
+                                            ) : (
+                                                <span className="text-slate-400">Today or any future date</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Symptoms & Duration */}
                             <div className="space-y-4 pt-2 border-t border-slate-100">
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -427,6 +520,7 @@ const BookAppointmentPage = () => {
                                         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                                             Describe Symptoms & Primary Complaint
                                         </label>
+
                                         <textarea
                                             rows={3}
                                             required

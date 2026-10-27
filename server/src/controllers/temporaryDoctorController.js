@@ -143,6 +143,47 @@ exports.expressInterest = async (req, res) => {
             });
         }
 
+        // Validate: dates must not be in the past
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startDate = new Date(requestedStartDate);
+        const endDate = new Date(requestedEndDate);
+
+        if (startDate < today) {
+            return res.status(400).json({
+                success: false,
+                message: 'Availability start date cannot be in the past.'
+            });
+        }
+
+        if (endDate < startDate) {
+            return res.status(400).json({
+                success: false,
+                message: 'Availability end date must be on or after start date.'
+            });
+        }
+
+        // Validate: if linked to a requirement, both dates must be within requirement's requiredDate
+        if (requirementId) {
+            const requirement = await HospitalDoctorRequirement.findById(requirementId);
+            if (requirement) {
+                const reqDate = new Date(requirement.requiredDate);
+                reqDate.setHours(23, 59, 59, 999); // allow up to end of required date
+                if (startDate > reqDate) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Start date cannot be after the hospital's required date (${requirement.requiredDate.toDateString()}).`
+                    });
+                }
+                if (endDate > reqDate) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `End date cannot be after the hospital's required date (${requirement.requiredDate.toDateString()}).`
+                    });
+                }
+            }
+        }
+
         const tempRequest = new TemporaryDoctorRequest({
             doctorId: req.user._id,
             tempProfileId: profile._id,
