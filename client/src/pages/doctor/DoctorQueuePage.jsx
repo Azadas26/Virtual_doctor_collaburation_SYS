@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import API from '../../services/api';
 import Sidebar from '../../components/Sidebar';
 import {
@@ -241,7 +242,22 @@ const DoctorQueuePage = () => {
                             <span className="text-2xl font-black text-emerald-700 font-mono">{summary?.completedCount || 0}</span>
                         </div>
                     </div>
+
+                    {/* Quick navigation to date-wise consultation history */}
+                    <div className="mt-4 pt-4 border-t border-teal-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <span className="text-slate-600 font-medium">
+                            Need to review previous patients or print past prescriptions?
+                        </span>
+                        <Link
+                            to="/doctor/consultations"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-xs transition w-fit"
+                        >
+                            <CalendarCheck className="w-4 h-4" />
+                            View Date-Wise Consultations & Prescriptions
+                        </Link>
+                    </div>
                 </div>
+
 
                 {loading ? (
                     <div className="py-20 text-center">

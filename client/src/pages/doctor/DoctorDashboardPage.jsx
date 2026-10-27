@@ -4,7 +4,7 @@ import API from '../../services/api';
 import Sidebar from '../../components/Sidebar';
 import Role3DCanvas from '../../components/Role3DCanvas';
 import { useAuth } from '../../context/AuthContext';
-import { Stethoscope, Clock, Users, ArrowRight } from 'lucide-react';
+import { Stethoscope, Clock, Users, ArrowRight, CalendarCheck } from 'lucide-react';
 
 const DoctorDashboardPage = () => {
     const { user, hospital } = useAuth();
@@ -57,9 +57,12 @@ const DoctorDashboardPage = () => {
                                     </div>
                                 ))}
                             </div>
-                            <div className="mt-5">
+                            <div className="mt-5 flex flex-wrap gap-3">
                                 <Link to="/doctor/queue" className="bg-teal-500 hover:bg-teal-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md flex items-center gap-2 transition w-fit">
                                     <Clock className="w-4 h-4" /> Open Live OPD Queue <ArrowRight className="w-4 h-4" />
+                                </Link>
+                                <Link to="/doctor/consultations" className="bg-white/10 hover:bg-white/20 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 transition w-fit">
+                                    <CalendarCheck className="w-4 h-4 text-teal-300" /> Patient Consultations & Rx
                                 </Link>
                             </div>
                         </div>

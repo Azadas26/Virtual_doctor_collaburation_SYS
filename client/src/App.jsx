@@ -28,6 +28,7 @@ import HospitalContractsPage from './pages/hospital/HospitalContractsPage';
 // Fixed & Doctor Pages
 import DoctorDashboardPage from './pages/doctor/DoctorDashboardPage';
 import DoctorQueuePage from './pages/doctor/DoctorQueuePage';
+import DoctorConsultationsPage from './pages/doctor/DoctorConsultationsPage';
 
 // Voluntary Temp Doctor Pages
 import TempDoctorDashboardPage from './pages/tempDoctor/TempDoctorDashboardPage';
@@ -156,6 +157,14 @@ function App() {
                                     </ProtectedRoute>
                                 }
                             />
+                            <Route
+                                path="/hospital/consultations"
+                                element={
+                                    <ProtectedRoute allowedRoles={['HOSPITAL_ADMIN', 'MAIN_ADMIN']}>
+                                        <DoctorConsultationsPage />
+                                    </ProtectedRoute>
+                                }
+                            />
 
                             {/* Fixed Doctor Routes */}
                             <Route
@@ -171,6 +180,14 @@ function App() {
                                 element={
                                     <ProtectedRoute allowedRoles={['FIXED_DOCTOR', 'TEMPORARY_DOCTOR', 'HOSPITAL_ADMIN']}>
                                         <DoctorQueuePage />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/doctor/consultations"
+                                element={
+                                    <ProtectedRoute allowedRoles={['FIXED_DOCTOR', 'TEMPORARY_DOCTOR', 'HOSPITAL_ADMIN']}>
+                                        <DoctorConsultationsPage />
                                     </ProtectedRoute>
                                 }
                             />
@@ -216,6 +233,15 @@ function App() {
                                     </ProtectedRoute>
                                 }
                             />
+                            <Route
+                                path="/temp-doctor/consultations"
+                                element={
+                                    <ProtectedRoute allowedRoles={['TEMPORARY_DOCTOR', 'FIXED_DOCTOR']}>
+                                        <DoctorConsultationsPage />
+                                    </ProtectedRoute>
+                                }
+                            />
+
 
                             {/* Patient Routes */}
                             <Route

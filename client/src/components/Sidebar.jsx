@@ -209,6 +209,7 @@ const Sidebar = () => {
                                 {navItem('/hospital/dashboard', LayoutDashboard, 'Hospital Dashboard')}
                                 {navItem('/hospital/queue', Clock, 'Live Patient Queue', 'Live')}
                                 {navItem('/hospital/doctors', Stethoscope, 'Doctor Roster & OPDs')}
+                                {navItem('/hospital/consultations', CalendarCheck, 'Consultation Records')}
                             </div>
                         </div>
 
@@ -235,6 +236,7 @@ const Sidebar = () => {
                             <div className="space-y-1">
                                 {navItem('/doctor/dashboard', LayoutDashboard, 'Doctor Dashboard')}
                                 {navItem('/doctor/queue', Clock, 'Live Patient Queue', 'Active')}
+                                {navItem('/doctor/consultations', CalendarCheck, 'Patient Consultations & Rx')}
                             </div>
                         </div>
                     </div>
@@ -265,6 +267,9 @@ const Sidebar = () => {
                                 {docsLocked
                                     ? lockedNavItem(Clock, 'My Shift & Queue')
                                     : navItem('/temp-doctor/schedule', Clock, 'My Shift & Queue', 'OPD')}
+                                {docsLocked
+                                    ? lockedNavItem(CalendarCheck, 'Patient Consultations & Rx')
+                                    : navItem('/temp-doctor/consultations', CalendarCheck, 'Patient Consultations & Rx')}
                                 {docsLocked
                                     ? lockedNavItem(Building2, 'Available Requirements')
                                     : navItem('/temp-doctor/hospitals', Building2, 'Available Requirements')}

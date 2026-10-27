@@ -396,3 +396,171 @@ exports.getMyConsultations = async (req, res) => {
     }
 };
 
+// @desc Get Doctor Date-wise Patient Consultations & Prescriptions List
+// @route GET /api/consultations/history
+// @access Private (FIXED_DOCTOR, TEMPORARY_DOCTOR, HOSPITAL_ADMIN, MAIN_ADMIN)
+exports.getConsultationHistory = async (req, res) => {
+    try {
+        const { date, doctorId: queryDocId, search } = req.query;
+        let doctor = null;
+        let targetDoctorId = null;
+        let hospital = null;
+        let hospitalDoctors = [];
+
+        // 1. Resolve Doctor and Hospital context
+        if (req.user.role === 'HOSPITAL_ADMIN' || req.user.role === 'MAIN_ADMIN') {
+            if (req.user.role === 'HOSPITAL_ADMIN') {
+                hospital = await Hospital.findOne({ adminUserId: req.user._id });
+                if (!hospital && req.user.hospitalId) {
+                    hospital = await Hospital.findById(req.user.hospitalId);
+                }
+            }
+
+            if (hospital) {
+                hospitalDoctors = await Doctor.find({ hospitalId: hospital._id, status: 'ACTIVE' })
+                    .select('doctorName specialization department doctorType qualification');
+            }
+
+            if (queryDocId) {
+                targetDoctorId = queryDocId;
+                doctor = await Doctor.findById(queryDocId).populate('hospitalId', 'name district state address contactNumber');
+            } else if (hospitalDoctors.length > 0) {
+                targetDoctorId = hospitalDoctors[0]._id;
+                doctor = await Doctor.findById(targetDoctorId).populate('hospitalId', 'name district state address contactNumber');
+            }
+        } else {
+            // FIXED_DOCTOR or TEMPORARY_DOCTOR
+            if (queryDocId) {
+                doctor = await Doctor.findById(queryDocId).populate('hospitalId', 'name district state address contactNumber');
+            } else {
+                doctor = await Doctor.findOne({ userId: req.user._id, status: 'ACTIVE' }).populate('hospitalId', 'name district state address contactNumber');
+                if (!doctor) {
+                    doctor = await Doctor.findOne({ userId: req.user._id }).populate('hospitalId', 'name district state address contactNumber');
+                }
+            }
+            if (doctor) {
+                targetDoctorId = doctor._id;
+            }
+        }
+
+        // 2. Parse selected date (supports YYYY-MM-DD or DD-MM-YYYY, default to today)
+        let selectedDateStr = date;
+        if (!selectedDateStr) {
+            selectedDateStr = new Date().toISOString().split('T')[0];
+        }
+
+        let y, m, d;
+        if (selectedDateStr.includes('-')) {
+            const parts = selectedDateStr.split('-');
+            if (parts[0].length === 4) {
+                y = parseInt(parts[0], 10);
+                m = parseInt(parts[1], 10) - 1;
+                d = parseInt(parts[2], 10);
+            } else {
+                d = parseInt(parts[0], 10);
+                m = parseInt(parts[1], 10) - 1;
+                y = parseInt(parts[2], 10);
+            }
+        } else {
+            const parsed = new Date(selectedDateStr);
+            y = parsed.getFullYear();
+            m = parsed.getMonth();
+            d = parsed.getDate();
+        }
+
+        // Standardized ISO date string YYYY-MM-DD
+        const formattedDateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+        // Create range covering timezone shifts
+        const dayStart = new Date(y, m, d, 0, 0, 0, 0);
+        const dayEnd = new Date(y, m, d, 23, 59, 59, 999);
+        const utcStart = new Date(Date.UTC(y, m, d, 0, 0, 0, 0));
+        const utcEnd = new Date(Date.UTC(y, m, d, 23, 59, 59, 999));
+
+        const queryMin = new Date(Math.min(dayStart.getTime(), utcStart.getTime()));
+        const queryMax = new Date(Math.max(dayEnd.getTime(), utcEnd.getTime()));
+
+        if (!targetDoctorId) {
+            return res.json({
+                success: true,
+                selectedDate: formattedDateStr,
+                doctor: null,
+                hospitalDoctors: hospitalDoctors || [],
+                consultations: [],
+                appointments: [],
+                count: 0,
+                summary: { totalConsultations: 0, totalPrescriptions: 0, completedCount: 0, waitingCount: 0 },
+                message: 'No doctor assigned or selected.'
+            });
+        }
+
+        // Fetch appointments on that date for this doctor
+        const dateAppointments = await Appointment.find({
+            doctorId: targetDoctorId,
+            appointmentDate: { $gte: queryMin, $lte: queryMax }
+        })
+            .populate('patientId', 'name dateOfBirth gender contact address emergencyContact medicalHistory allergies existingConditions bloodGroup')
+            .sort({ queuePosition: 1, createdAt: 1 });
+
+        const apptIdsOnDate = dateAppointments.map(a => a._id);
+
+        // Fetch consultations matching date or appointments on date
+        const consultFilter = {
+            doctorId: targetDoctorId,
+            $or: [
+                { consultationDate: { $gte: queryMin, $lte: queryMax } },
+                { createdAt: { $gte: queryMin, $lte: queryMax } },
+                { appointmentId: { $in: apptIdsOnDate } }
+            ]
+        };
+
+        let consultations = await Consultation.find(consultFilter)
+            .populate('patientId', 'name dateOfBirth gender contact address emergencyContact medicalHistory allergies existingConditions bloodGroup')
+            .populate('appointmentId', 'appointmentNumber appointmentDate timeSlot symptoms symptomDuration priorityCategory queuePosition status')
+            .populate('doctorId', 'doctorName specialization department doctorType qualification registrationNumber')
+            .populate('hospitalId', 'name district state address contactNumber')
+            .sort({ consultationDate: -1, createdAt: -1 });
+
+        // Optional search filtering by patient name, contact, notes, or appointment number
+        if (search && search.trim()) {
+            const q = search.trim().toLowerCase();
+            consultations = consultations.filter(c => {
+                const pName = c.patientId?.name?.toLowerCase() || '';
+                const pContact = c.patientId?.contact?.toLowerCase() || '';
+                const aptNum = c.appointmentId?.appointmentNumber?.toLowerCase() || '';
+                const notes = c.clinicalNotes?.toLowerCase() || '';
+                const obs = c.observations?.toLowerCase() || '';
+                const medMatch = c.medications?.some(med => med.name?.toLowerCase().includes(q));
+                return pName.includes(q) || pContact.includes(q) || aptNum.includes(q) || notes.includes(q) || obs.includes(q) || medMatch;
+            });
+        }
+
+        const totalPrescriptions = consultations.filter(c => c.medications && c.medications.length > 0).length;
+
+        return res.json({
+            success: true,
+            selectedDate: formattedDateStr,
+            doctor,
+            hospitalDoctors: hospitalDoctors || [],
+            consultations,
+            appointments: dateAppointments,
+            count: consultations.length,
+            summary: {
+                totalConsultations: consultations.length,
+                totalAppointments: dateAppointments.length,
+                totalPrescriptions,
+                completedCount: dateAppointments.filter(a => a.status === 'COMPLETED').length,
+                waitingCount: dateAppointments.filter(a => ['BOOKED', 'CHECKED_IN', 'WAITING'].includes(a.status)).length
+            }
+        });
+
+    } catch (error) {
+        console.error('getConsultationHistory Error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching consultation history: ' + error.message
+        });
+    }
+};
+
+
